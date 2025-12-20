@@ -6,7 +6,7 @@ import { Input } from './ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from './ui/alert-dialog';
-import { Upload, FileText, Trash2, Eye, Search, Sparkles, X } from 'lucide-react';
+import { Upload, FileText, Trash2, Eye, Search, Sparkles, X, CloudUpload } from 'lucide-react';
 import { toast } from 'sonner';
 import { createClient } from '@/lib/supabase';
 
@@ -134,11 +134,18 @@ export function UploadMaterials() {
           setMaterials([]);
         } else if (materialsData) {
           const formattedMaterials = materialsData.map(m => {
-            // Extract filename from file_url
-            const filename = m.file_url?.split('/').pop() || 'Unknown';
+            // Extract filename from file_url and clean it up
+            const rawFilename = m.file_url?.split('/').pop() || 'Unknown';
+            // Remove timestamp prefix and clean up the name
+            const cleanFilename = rawFilename
+              .replace(/^\d{13}-/, '') // Remove 13-digit timestamp prefix
+              .replace(/\.(pdf|docx|doc)$/i, '') // Remove file extension
+              .replace(/_/g, ' ') // Replace underscores with spaces
+              .trim();
+            
             return {
               id: m.id,
-              name: filename,
+              name: cleanFilename || 'Unnamed',
               topic: m.topic || 'General',
               type: m.file_type?.includes('pdf') ? 'PDF' : 'DOCX',
               date: new Date(m.created_at).toISOString().split('T')[0],
@@ -231,7 +238,21 @@ export function UploadMaterials() {
     }
     
     setSelectedFile(file);
-    toast.success(`File "${file.name}" selected`);
+    
+    // Auto-detect material type from filename
+    const fileName = file.name.toLowerCase();
+    if (fileName.includes('syllabus') || fileName.includes('syllabi') || fileName.includes('curriculum')) {
+      setMaterialType('syllabus');
+      toast.success(`File "${file.name}" selected - detected as Syllabus`);
+    } else if (fileName.includes('pyq') || fileName.includes('previous year') || fileName.includes('past paper') || fileName.includes('question paper')) {
+      setMaterialType('previous_year_paper');
+      toast.success(`File "${file.name}" selected - detected as Previous Year Paper`);
+    } else if (fileName.includes('notes') || fileName.includes('chapter') || fileName.includes('lecture')) {
+      setMaterialType('notes');
+      toast.success(`File "${file.name}" selected - detected as Notes`);
+    } else {
+      toast.success(`File "${file.name}" selected`);
+    }
   };
 
   const handleUpload = async () => {
@@ -535,6 +556,42 @@ export function UploadMaterials() {
       </AnimatePresence>
 
       <div className="p-4 md:p-6 lg:p-8 max-w-[1600px] mx-auto space-y-6">
+        {/* Full-screen uploading overlay */}
+        {uploading && (
+          <div className="fixed inset-0 bg-white/95 dark:bg-[#030213]/95 z-50 flex items-center justify-center">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="text-center max-w-sm mx-4"
+            >
+              <div className="relative mx-auto w-20 h-20 mb-6">
+                <div className="absolute inset-0 rounded-full border-4 border-gray-100 dark:border-gray-800"></div>
+                <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-blue-500 dark:border-t-cyan-400 animate-spin"></div>
+                <div className="absolute inset-3 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center">
+                  <CloudUpload className="w-6 h-6 text-white" />
+                </div>
+              </div>
+              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                Uploading Material
+              </h3>
+              <p className="text-gray-500 dark:text-gray-400 text-sm mb-4">
+                Processing your file and extracting content...
+              </p>
+              <div className="w-48 mx-auto">
+                <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                  <motion.div
+                    className="h-full bg-gradient-to-r from-blue-500 to-cyan-500"
+                    initial={{ width: 0 }}
+                    animate={{ width: `${uploadProgress}%` }}
+                    transition={{ duration: 0.3 }}
+                  />
+                </div>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-300 mt-2">{uploadProgress}%</p>
+              </div>
+            </motion.div>
+          </div>
+        )}
+        
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -691,25 +748,6 @@ export function UploadMaterials() {
                   {uploading ? 'Uploading...' : 'Upload Material'}
                 </Button>
               </div>
-
-              {uploading && (
-                <motion.div 
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="space-y-2"
-                >
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-600 dark:text-gray-400 font-medium">Uploading...</span>
-                    <span className="text-gray-900 dark:text-white font-bold">{uploadProgress}%</span>
-                  </div>
-                  <div className="relative h-2 bg-gray-200 dark:bg-slate-700 rounded-full overflow-hidden">
-                    <motion.div
-                      className="h-full bg-linear-to-r from-blue-600 to-cyan-600"
-                      style={{ width: `${uploadProgress}%` }}
-                    />
-                  </div>
-                </motion.div>
-              )}
             </CardContent>
           </Card>
       </motion.div>
