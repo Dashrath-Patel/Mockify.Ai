@@ -129,28 +129,47 @@ ${materialContext}
 
 If the student's doubt is NOT about this question's topic, politely redirect them.`;
 
+  // Helper function for exponential backoff
+  const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
   try {
     // Try models in order: gemini-2.5-flash-lite (less overloaded), then fallbacks
-    const models = ['gemini-2.5-flash-lite', 'gemini-2.5-flash', 'gemini-1.5-flash'];
+    const models = ['gemini-2.5-flash-lite', 'gemini-2.5-flash', 'gemini-2.0-flash'];
     let response;
     let lastError;
 
-    for (const modelName of models) {
-      try {
-        response = await ai.models.generateContent({
-          model: modelName,
-          contents: prompt,
-          config: {
-            temperature: 0.7,
-            maxOutputTokens: 2000,
+    for (let modelIndex = 0; modelIndex < models.length; modelIndex++) {
+      const modelName = models[modelIndex];
+      
+      // Retry each model up to 2 times with exponential backoff for rate limits
+      for (let attempt = 0; attempt < 2; attempt++) {
+        try {
+          response = await ai.models.generateContent({
+            model: modelName,
+            contents: prompt,
+            config: {
+              temperature: 0.7,
+              maxOutputTokens: 2000,
+            }
+          });
+          break; // Success - exit retry loop
+        } catch (err: any) {
+          lastError = err;
+          
+          // If rate limited (429), wait and retry same model
+          if (err.status === 429 && attempt < 1) {
+            const delay = Math.pow(2, attempt + 1) * 1000; // 2s, 4s
+            console.log(`Model ${modelName} rate limited, waiting ${delay}ms before retry...`);
+            await sleep(delay);
+            continue;
           }
-        });
-        break; // Success - exit loop
-      } catch (err: any) {
-        lastError = err;
-        console.log(`Model ${modelName} failed (${err.status}), trying next...`);
-        continue;
+          
+          console.log(`Model ${modelName} failed (${err.status || err.code}), trying next...`);
+          break; // Try next model
+        }
       }
+      
+      if (response) break; // Success - exit model loop
     }
 
     if (!response) {
