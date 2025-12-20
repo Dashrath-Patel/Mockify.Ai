@@ -74,8 +74,12 @@ export function AITutorChat({
   const [inputText, setInputText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [streamingText, setStreamingText] = useState('');
+  const [isStreaming, setIsStreaming] = useState(false);
+  const [fullText, setFullText] = useState('');
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const messageStartRef = useRef<HTMLDivElement>(null);
 
   // Reset chat when question changes (different questionIndex = fresh context)
   useEffect(() => {
@@ -83,15 +87,40 @@ export function AITutorChat({
       setMessages([]);
       setInputText('');
       setError(null);
+      setStreamingText('');
+      setIsStreaming(false);
+      setFullText('');
     }
   }, [questionIndex, open]);
 
-  // Auto-scroll to bottom when new messages arrive
+  // Streaming effect - types out fullText character by character
   useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
-  }, [messages, isLoading]);
+    if (!isStreaming || !fullText) return;
+    
+    let currentIndex = 0;
+    const charsPerTick = 4;
+    
+    // Scroll to message start
+    setTimeout(() => {
+      if (messageStartRef.current) {
+        messageStartRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 100);
+    
+    const intervalId = setInterval(() => {
+      currentIndex += charsPerTick;
+      
+      if (currentIndex >= fullText.length) {
+        setStreamingText(fullText);
+        setIsStreaming(false);
+        clearInterval(intervalId);
+      } else {
+        setStreamingText(fullText.slice(0, currentIndex));
+      }
+    }, 20);
+    
+    return () => clearInterval(intervalId);
+  }, [isStreaming, fullText]);
 
   // Focus input when dialog opens
   useEffect(() => {
@@ -153,6 +182,11 @@ export function AITutorChat({
         timestamp: new Date()
       };
 
+      // Start streaming effect
+      setFullText(data.explanation);
+      setStreamingText('');
+      setIsStreaming(true);
+      
       setMessages(prev => [...prev, assistantMessage]);
     } catch (err) {
       console.error('Error getting AI response:', err);
@@ -203,6 +237,7 @@ export function AITutorChat({
   };
 
   const formatMessage = (content: string) => {
+    if (!content) return '';
     return content
       .replace(/###\s+(.*?)(\n|$)/g, '<h3 class="text-base font-bold mt-3 mb-2">$1</h3>')
       .replace(/##\s+(.*?)(\n|$)/g, '<h2 class="text-lg font-bold mt-3 mb-2">$1</h2>')
@@ -330,17 +365,25 @@ export function AITutorChat({
 
           {/* Messages */}
           <AnimatePresence mode="popLayout">
-            {messages.map((message) => (
+            {messages.map((message, index) => {
+              const isLastMessage = index === messages.length - 1;
+              const isMessageStreaming = message.role === 'assistant' && isLastMessage && isStreaming;
+              const contentToShow = isMessageStreaming ? streamingText : message.content;
+              const shouldAttachRef = message.role === 'assistant' && isLastMessage;
+              
+              return (
               <motion.div
                 key={message.id}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
                 className={cn(
-                  "flex gap-3",
+                  "flex gap-3 relative",
                   message.role === 'user' ? 'justify-end' : 'justify-start'
                 )}
               >
+                {/* Invisible anchor for scrolling to message start */}
+                {shouldAttachRef && <div ref={messageStartRef} className="absolute" />}
                 {message.role === 'assistant' && (
                   <div className="p-1.5 bg-primary rounded-lg shrink-0 h-fit">
                     <Bot className="w-3.5 h-3.5 text-primary-foreground" />
@@ -367,14 +410,17 @@ export function AITutorChat({
                         </Badge>
                       )}
                       
-                      {/* Message Content */}
-                      <div 
-                        className="text-sm leading-relaxed prose prose-sm max-w-none dark:prose-invert"
-                        dangerouslySetInnerHTML={{ __html: formatMessage(message.content) }}
-                      />
+                      {/* Message Content with typing effect */}
+                      <div className="text-sm leading-relaxed prose prose-sm max-w-none dark:prose-invert">
+                        <span dangerouslySetInnerHTML={{ __html: formatMessage(contentToShow) }} />
+                        {/* Typing cursor indicator - inline with text */}
+                        {isMessageStreaming && (
+                          <span className="inline-block w-0.5 h-4 bg-primary animate-pulse ml-0.5 align-middle" />
+                        )}
+                      </div>
 
-                      {/* Material References */}
-                      {message.materialReferences && message.materialReferences.length > 0 && (
+                      {/* Material References - show after streaming completes */}
+                      {!isMessageStreaming && message.materialReferences && message.materialReferences.length > 0 && (
                         <div className="pt-3 border-t border-border">
                           <p className="text-xs font-medium text-muted-foreground mb-2 flex items-center gap-1">
                             <BookOpen className="w-3 h-3" />
@@ -396,7 +442,8 @@ export function AITutorChat({
                         </div>
                       )}
 
-                      {/* Feedback */}
+                      {/* Feedback - show after streaming completes */}
+                      {!isMessageStreaming && (
                       <div className="flex items-center justify-between pt-2 border-t border-border">
                         <span className="text-xs text-muted-foreground">Was this helpful?</span>
                         <div className="flex gap-1">
@@ -426,6 +473,7 @@ export function AITutorChat({
                           </Button>
                         </div>
                       </div>
+                      )}
                     </div>
                   )}
                 </div>
@@ -436,7 +484,8 @@ export function AITutorChat({
                   </div>
                 )}
               </motion.div>
-            ))}
+            );
+            })}
           </AnimatePresence>
 
           {/* Loading Indicator */}
