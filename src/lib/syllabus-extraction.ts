@@ -12,6 +12,181 @@ if (!process.env.GEMINI_API_KEY) {
 // Initialize new Gemini SDK with API key
 const genAI = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
+/**
+ * Comprehensive word dictionary for fixing PDF extraction issues
+ */
+const WORD_DICTIONARY = new Set([
+  // Common English words
+  'the', 'of', 'and', 'in', 'to', 'for', 'with', 'by', 'on', 'at', 'from', 'as', 'is', 'are', 'was', 'were',
+  'a', 'an', 'or', 'not', 'but', 'be', 'can', 'has', 'have', 'had', 'do', 'does', 'did', 'will', 'would',
+  'this', 'that', 'these', 'those', 'their', 'its', 'using', 'between', 'into', 'through', 'during',
+  
+  // Scientific terms - Physics
+  'physics', 'measurement', 'motion', 'force', 'forces', 'energy', 'work', 'power', 'momentum',
+  'rotational', 'gravitation', 'gravity', 'properties', 'matter', 'thermodynamics', 'kinetic',
+  'theory', 'gases', 'oscillations', 'waves', 'electrostatics', 'current', 'electricity',
+  'magnetic', 'magnetism', 'electromagnetic', 'induction', 'alternating', 'optics', 'ray',
+  'wave', 'dual', 'nature', 'radiation', 'atoms', 'nuclei', 'electronic', 'devices',
+  'semiconductor', 'communication', 'systems', 'units', 'dimensions', 'kinematics', 'dynamics',
+  'conservation', 'collision', 'elasticity', 'surface', 'tension', 'viscosity', 'fluid',
+  'thermal', 'expansion', 'calorimetry', 'heat', 'transfer', 'specific', 'capacity', 'latent',
+  'laws', 'entropy', 'simple', 'harmonic', 'pendulum', 'resonance', 'sound', 'doppler', 'effect',
+  'superposition', 'standing', 'beats', 'electric', 'field', 'potential', 'capacitance',
+  'dielectrics', 'resistance', 'ohms', 'law', 'cells', 'kirchhoffs', 'wheatstone', 'bridge',
+  'potentiometer', 'biot', 'savart', 'amperes', 'circuital', 'solenoid', 'toroid', 'faradays',
+  'lenzs', 'eddy', 'currents', 'self', 'mutual', 'inductance', 'transformers', 'generators',
+  'motors', 'phasors', 'impedance', 'resonant', 'circuits', 'power', 'factor', 'wattless',
+  'reflection', 'refraction', 'total', 'internal', 'mirrors', 'lenses', 'magnification',
+  'microscope', 'telescope', 'interference', 'diffraction', 'polarization', 'photoelectric',
+  'photon', 'de', 'broglie', 'wavelength', 'heisenberg', 'uncertainty', 'bohr', 'model',
+  'hydrogen', 'spectrum', 'x', 'rays', 'radioactivity', 'alpha', 'beta', 'gamma', 'decay',
+  'half', 'life', 'nuclear', 'fission', 'fusion', 'binding', 'mass', 'defect',
+  'intrinsic', 'extrinsic', 'semiconductors', 'junction', 'diode', 'transistor', 'logic', 'gates',
+  'integral', 'derivative', 'anti', 'conservative', 'non',
+  
+  // Chemistry terms
+  'chemistry', 'chemical', 'atomic', 'structure', 'periodic', 'table', 'classification', 'elements',
+  'bonding', 'molecular', 'states', 'equilibrium', 'ionic', 'solutions', 'redox', 'reactions',
+  'electrochemistry', 'kinetics', 'surface', 'chemistry', 'general', 'principles', 'processes',
+  'isolation', 'metals', 'block', 'compounds', 'organic', 'hydrocarbons', 'haloalkanes', 'haloarenes',
+  'alcohols', 'phenols', 'ethers', 'aldehydes', 'ketones', 'carboxylic', 'acids', 'amines',
+  'biomolecules', 'polymers', 'environmental', 'everyday', 'life', 'solid', 'state', 'liquid',
+  'gaseous', 'colligative', 'thermochemistry', 'spontaneity', 'catalysis', 'adsorption',
+  'metallurgy', 'coordination', 'organometallics', 'nitrogen', 'oxygen', 'halogens', 'noble',
+  'alkanes', 'alkenes', 'alkynes', 'aromatic', 'isomerism', 'stereochemistry', 'functional', 'groups',
+  'purification', 'qualitative', 'analysis', 'proteins', 'carbohydrates', 'lipids', 'nucleic',
+  'vitamins', 'hormones', 'drugs', 'synthetic', 'natural', 'rubber', 'plastics', 'fibres',
+  'atmosphere', 'water', 'pollution', 'green', 'sustainable', 'medicines', 'fertilizers', 'soaps',
+  'concentration', 'dilute', 'electrochemical', 'different', 'methods', 'expressing',
+  
+  // Biology terms  
+  'biology', 'living', 'world', 'plant', 'kingdom', 'animal', 'cell', 'unit', 'biomolecules',
+  'division', 'transport', 'plants', 'mineral', 'nutrition', 'photosynthesis', 'respiration',
+  'growth', 'development', 'digestion', 'absorption', 'breathing', 'exchange', 'body', 'fluids',
+  'circulation', 'excretory', 'products', 'elimination', 'locomotion', 'movement', 'neural',
+  'control', 'coordination', 'endocrine', 'system', 'reproduction', 'organisms', 'flowering',
+  'human', 'reproductive', 'health', 'genetics', 'principles', 'inheritance', 'variation',
+  'molecular', 'basis', 'evolution', 'health', 'disease', 'strategies', 'enhancement', 'food',
+  'production', 'microbes', 'welfare', 'biotechnology', 'application', 'ecology', 'environment',
+  'issues', 'biodiversity', 'organisms', 'populations', 'ecosystem',
+  
+  // Common scientific words
+  'given', 'method', 'principle', 'characteristics', 'determination', 'experiment', 'practical',
+  'study', 'verification', 'identification', 'collection', 'mixed', 'resistor', 'LED', 'plot',
+  'graph', 'curve', 'curves', 'finding', 'reverse', 'breakdown', 'zener', 'carbon', 'focal',
+  'length', 'mirror', 'lens', 'prism', 'angle', 'incidence', 'deviation', 'parallel', 'carrying',
+  'conductors', 'centre', 'two', 'three', 'particle', 'vernier', 'calipers', 'screw', 'gauge',
+  'external', 'internal', 'diameter', 'meter', 'temperature', 'room', 'using', 'resonance', 'tube',
+  'speed', 'air', 'dissipation', 'plotting', 'acceleration', 'due', 'coefficient', 'restitution',
+  'measuring', 'liquid', 'capillary', 'rise'
+]);
+
+/**
+ * Fix PDF extraction issues - both broken words (Integr al → Integral) 
+ * and concatenated words (Specificheat → Specific heat)
+ */
+export function fixPDFTextIssues(text: string): string {
+  if (!text || text.length < 3) return text;
+  
+  let result = text;
+  
+  // Step 1: Fix broken words (words split by random spaces like "Integr al" → "Integral")
+  result = fixBrokenWords(result);
+  
+  // Step 2: Fix concatenated words (words stuck together like "Specificheat" → "Specific heat")
+  result = fixConcatenatedWords(result);
+  
+  return result;
+}
+
+/**
+ * Fix words that were incorrectly split by PDF extraction
+ * e.g., "Integr al" → "Integral", "dimensi ons" → "dimensions"
+ */
+function fixBrokenWords(text: string): string {
+  if (!text) return text;
+  
+  let result = text;
+  
+  // Split into potential word parts
+  const parts = result.split(/\s+/);
+  const fixedParts: string[] = [];
+  
+  let i = 0;
+  while (i < parts.length) {
+    let currentPart = parts[i];
+    
+    // Try to merge with next parts if they form a known word
+    let merged = false;
+    for (let j = 1; j <= 3 && i + j < parts.length; j++) {
+      // Build candidate by joining current and next j parts
+      const candidateParts = parts.slice(i, i + j + 1);
+      const candidate = candidateParts.join('').toLowerCase();
+      
+      // Check if merged word is in dictionary
+      if (WORD_DICTIONARY.has(candidate)) {
+        // Found a match! Use proper casing
+        const firstPart = parts[i];
+        const isUpperCase = firstPart === firstPart.toUpperCase() && firstPart.length > 1;
+        const isCapitalized = firstPart[0] === firstPart[0].toUpperCase();
+        
+        if (isUpperCase) {
+          fixedParts.push(candidate.toUpperCase());
+        } else if (isCapitalized) {
+          fixedParts.push(candidate.charAt(0).toUpperCase() + candidate.slice(1));
+        } else {
+          fixedParts.push(candidate);
+        }
+        i += j + 1;
+        merged = true;
+        break;
+      }
+    }
+    
+    if (!merged) {
+      fixedParts.push(currentPart);
+      i++;
+    }
+  }
+  
+  return fixedParts.join(' ');
+}
+
+/**
+ * Fix concatenated words that have no spaces (common in PDF extraction)
+ * e.g., "Specificheatcapacity" → "Specific heat capacity"
+ */
+export function fixConcatenatedWords(text: string): string {
+  if (!text || text.length < 10) return text;
+  
+  // If text already has enough spaces, it's likely fine
+  const spaceCount = (text.match(/\s/g) || []).length;
+  const wordEstimate = text.length / 6; // Average word is ~6 chars
+  if (spaceCount > wordEstimate * 0.5) {
+    return text; // More than half expected spaces exist
+  }
+  
+  let result = text;
+  
+  // Insert spaces before capital letters that follow lowercase letters (camelCase)
+  result = result.replace(/([a-z])([A-Z])/g, '$1 $2');
+  
+  // Convert dictionary to sorted array for matching (longest first)
+  const sortedWords = Array.from(WORD_DICTIONARY).sort((a, b) => b.length - a.length);
+  
+  // Insert spaces before common words (case-insensitive)
+  for (const word of sortedWords) {
+    if (word.length < 3) continue; // Skip very short words
+    const pattern = new RegExp(`([a-zA-Z])(?=${word})`, 'gi');
+    result = result.replace(pattern, '$1 ');
+  }
+  
+  // Clean up: remove multiple spaces, trim
+  result = result.replace(/\s+/g, ' ').trim();
+  
+  return result;
+}
+
 export interface SyllabusTopicExtractionResult {
   success: boolean;
   topics: string[];
@@ -196,7 +371,15 @@ export async function extractSyllabusTopics(
 
 **EXAM CONTEXT**: This is the official ${examType} syllabus for ${currentYear}. The student is preparing for the ${examType} exam.
 
-**YOUR TASK**: Extract the EXACT syllabus topics as they appear in the official ${examType} curriculum for ${currentYear}.
+**YOUR TASK**: Extract ONLY the official syllabus topic names as they appear in the ${examType} curriculum.
+
+**IMPORTANT - PDF TEXT QUALITY ISSUE**: 
+The document text may have PDF extraction errors where words are incorrectly spaced:
+- Broken words like "Integr al" should be "Integral"
+- Broken words like "dimensi ons" should be "dimensions"  
+- Broken words like "p ar allel" should be "parallel"
+- Broken words like "conduc t ors" should be "conductors"
+YOU MUST FIX these broken words when extracting topics. Return properly spelled, correctly spaced topic names.
 
 **SYLLABUS DOCUMENT**:
 """
@@ -205,44 +388,85 @@ ${truncatedText}
 
 **CRITICAL REQUIREMENTS**:
 
-1. **Be Exam-Specific**: This is for ${examType} preparation. Only extract topics that are part of the official ${examType} syllabus.
+1. **ONLY Extract Real Topic Names**: Extract actual subject topics like "PHYSICS AND MEASUREMENT", "LAWS OF MOTION", "THERMODYNAMICS", etc.
 
-2. **Current Year Topics**: Focus on topics relevant to ${currentYear}. Skip outdated information, introductory pages, or administrative details.
+2. **FIX BROKEN WORDS**: If you see topics with broken spacing like "Specific he at capacity" or "Vernier c alipers", FIX them to "Specific heat capacity" and "Vernier calipers"
 
-3. **Identify Official Topics**: Look for subject sections, main topics, units, chapters, or topic headings in the document.
+3. **DO NOT Extract**:
+   - Random sentences from the document
+   - Partial sentences or incomplete text
+   - Administrative text like "The detailed syllabus..." or "has been uploaded..."
+   - URLs, website names, dates, or contact information
+   - Instructions, notes, or disclaimers
+   - Cover page text or headers/footers
 
-4. **Skip Non-Topics**:
-   - Skip: Cover pages, instructions, exam patterns, marking schemes
-   - Skip: Administrative info, dates, eligibility criteria
-   - Skip: "Introduction", "Overview", "Important Notes"
+4. **Topic Format**: 
+   - Each topic should be a clear, complete topic name with CORRECT SPELLING
+   - Format: "SUBJECT - TOPIC NAME" or just "TOPIC NAME"
+   - Examples: "PHYSICS AND MEASUREMENT", "Chemistry - Chemical Bonding", "HUMAN PHYSIOLOGY"
+   - Keep topic names SHORT (3-100 characters)
 
-5. **Extract Clean Topics**: 
-   - Format: "Subject - Topic Name"
-   - Include main topics and important subtopics
-   - Keep topic names concise and official
+4. **Skip Empty or Invalid Entries**:
+   - Do NOT include empty strings
+   - Do NOT include single words like "The", "and", "for"
+   - Do NOT include sentences that describe the syllabus
 
-6. **JSON Output**: Return ONLY valid JSON (no markdown, no explanation):
+5. **JSON Output**: Return ONLY valid JSON:
 {
-  "topics": ["Subject - Main Topic 1", "Subject - Main Topic 2"],
+  "topics": ["TOPIC 1", "TOPIC 2", "TOPIC 3"],
   "subtopics": {
-    "Subject - Main Topic 1": ["Subtopic 1", "Subtopic 2"],
-    "Subject - Main Topic 2": ["Subtopic A", "Subtopic B"]
+    "TOPIC 1": ["Subtopic A", "Subtopic B"]
   },
   "sections": ["Section 1", "Section 2"]
 }
 
 Return ONLY the JSON object, no additional text or explanation.`;
 
-    // Use Gemini 2.5 Flash Lite (lighter model, less overloaded, faster)
-    const result = await genAI.models.generateContent({
-      model: 'gemini-2.5-flash-lite',
-      contents: prompt,
-      config: {
-        temperature: 0.3, // Lower temperature for more consistent extraction
-        maxOutputTokens: 16384, // Increased for larger syllabi with many topics
-        responseMimeType: 'application/json', // Force JSON response
+    // Model fallback list - try multiple models if one is rate limited
+    const models = ['gemini-2.5-flash-lite', 'gemini-2.5-flash', 'gemini-2.0-flash'];
+    let result: any = null;
+    let lastError: any = null;
+    
+    for (const modelName of models) {
+      try {
+        console.log(`📤 Trying model: ${modelName}...`);
+        result = await genAI.models.generateContent({
+          model: modelName,
+          contents: prompt,
+          config: {
+            temperature: 0.3, // Lower temperature for more consistent extraction
+            maxOutputTokens: 16384, // Increased for larger syllabi with many topics
+            responseMimeType: 'application/json', // Force JSON response
+          }
+        });
+        console.log(`✓ Model ${modelName} succeeded`);
+        break; // Success, exit loop
+      } catch (modelError: any) {
+        lastError = modelError;
+        console.warn(`⚠️ Model ${modelName} failed:`, modelError.message || modelError);
+        
+        // If rate limited (429), wait and try next model
+        if (modelError.status === 429 || modelError.message?.includes('429') || modelError.message?.includes('quota')) {
+          console.log(`⏳ Rate limited on ${modelName}, trying next model...`);
+          await new Promise(resolve => setTimeout(resolve, 2000)); // Wait 2s before trying next
+          continue;
+        }
+        
+        // For other errors, try next model
+        continue;
       }
-    });
+    }
+    
+    // If all models failed, return failure (don't throw - let caller use fallback)
+    if (!result) {
+      console.error('❌ All Gemini models failed - returning failure for fallback handling');
+      return {
+        success: false,
+        topics: [],
+        error: lastError?.message || 'All AI models are rate limited or unavailable. Using pattern matching instead.',
+        extractedAt: new Date().toISOString()
+      };
+    }
 
     const responseText = (result.text || '').trim();
     
@@ -296,9 +520,52 @@ Return ONLY the JSON object, no additional text or explanation.`;
       };
     }
 
-    // Remove duplicates and clean up
+    // Comprehensive topic validation and cleanup
+    const invalidPatterns = [
+      /^the\s+(detailed|same|above|following|below)/i,  // "The detailed...", "The same..."
+      /^(include|includes|including|for\s+the)/i,       // "include description...", "for the..."
+      /^(has\s+been|have\s+been|is\s+being)/i,          // "has been uploaded..."
+      /^\d+\s*$/,                                        // Just numbers
+      /^page\s*\d+/i,                                    // "Page 1"
+      /^(section|unit|chapter)\s*$/i,                   // Just "Section" without a name
+      /^(a|an|the|in|on|at|to|for|of|with|by)\s*$/i,   // Just prepositions
+      /^\s*[-–—:;,\.\(\)]\s*$/,                         // Just punctuation
+      /uploaded|website|nmc|notification|eligibility/i, // Administrative text
+      /www\.|http|@|\.com|\.org|\.in/i,                 // URLs/emails
+      /^\d{4}[-\/]\d{2}[-\/]\d{2}/,                     // Dates
+      /phone|email|contact|address|apply/i,             // Contact info
+    ];
+    
     const uniqueTopics = [...new Set(parsed.topics)]
-      .filter((t): t is string => typeof t === 'string' && t.trim().length > 0);
+      .filter((t): t is string => {
+        // Must be a string
+        if (typeof t !== 'string') return false;
+        
+        const trimmed = t.trim();
+        
+        // Must have meaningful length (3-150 chars)
+        if (trimmed.length < 3 || trimmed.length > 150) return false;
+        
+        // Must have at least one letter
+        if (!/[a-zA-Z]/.test(trimmed)) return false;
+        
+        // Must not match invalid patterns
+        for (const pattern of invalidPatterns) {
+          if (pattern.test(trimmed)) {
+            console.log(`  ⚠️ Filtered out invalid topic: "${trimmed.substring(0, 50)}..."`);
+            return false;
+          }
+        }
+        
+        // Must have at least 2 characters that are letters
+        const letterCount = (trimmed.match(/[a-zA-Z]/g) || []).length;
+        if (letterCount < 2) return false;
+        
+        return true;
+      })
+      .map(t => fixPDFTextIssues(t.trim()));
+    
+    console.log(`✓ Filtered topics: ${parsed.topics.length} → ${uniqueTopics.length} valid topics`);
 
     return {
       success: true,
