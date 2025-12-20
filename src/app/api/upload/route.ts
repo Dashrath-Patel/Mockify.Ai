@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { extractAndChunkDocument, extractAndParseMCQs, isLikelyScanned, validateExtractionQuality } from '@/lib/langchain-extraction'
-import { generateEmbedding, formatMaterialForEmbedding } from '@/lib/huggingface-embeddings'
+import { generateEmbedding, generateEmbeddings, formatMaterialForEmbedding } from '@/lib/huggingface-embeddings'
 import { extractAndChunkPDF, sanitizeChunkText, CHUNK_STRATEGIES } from '@/lib/pdf-chunking'
 import { extractSyllabusTopics, extractTopicsWithPatterns, createTopicBasedChunks } from '@/lib/syllabus-extraction'
 
@@ -456,7 +456,8 @@ export async function POST(request: NextRequest) {
             
             console.log(`✓ Created ${chunks.length} topic chunks (avg: ${Math.round(chunks.reduce((sum, c) => sum + c.char_count, 0) / chunks.length)} chars per topic)`);
           } else {
-            console.log('⚠️ AI extraction failed, using pattern matching fallback...');
+            console.log('⚠️ AI extraction failed or returned no topics, using pattern matching fallback...');
+            console.log('AI extraction error:', syllabusExtraction.error);
             syllabusTopics = extractTopicsWithPatterns(rawText, finalExam);
             console.log(`✅ Pattern matching extracted ${syllabusTopics.length} topics`);
             
@@ -470,11 +471,16 @@ export async function POST(request: NextRequest) {
               word_count: topic.split(/\s+/).length
             }));
           }
-        } catch (error) {
-          console.error('❌ Topic extraction failed:', error);
-          // Use pattern matching as fallback
-          syllabusTopics = extractTopicsWithPatterns(rawText, finalExam);
-          console.log(`✅ Fallback extracted ${syllabusTopics.length} topics`);
+        } catch (error: any) {
+          console.error('❌ Topic extraction error (will use fallback):', error.message || error);
+          // Use pattern matching as fallback - THIS MUST NOT FAIL
+          try {
+            syllabusTopics = extractTopicsWithPatterns(rawText, finalExam);
+            console.log(`✅ Fallback pattern matching extracted ${syllabusTopics.length} topics`);
+          } catch (patternError) {
+            console.error('❌ Pattern matching also failed, using empty topics');
+            syllabusTopics = [];
+          }
           
           // Store only topic names (no full text extraction)
           chunks = syllabusTopics.map((topic, idx) => ({
@@ -702,73 +708,94 @@ export async function POST(request: NextRequest) {
       if (skipEmbeddings) {
         console.log(`📦 Storing ${chunks.length} syllabus topics (no embeddings needed)...`);
       } else {
-        console.log(`📦 Storing ${chunks.length} chunks with embeddings...`);
+        console.log(`📦 Storing ${chunks.length} chunks with embeddings (optimized batch processing)...`);
       }
       
       let chunksStored = 0;
       let quotaExhausted = false;
       
       try {
-        // Process chunks SEQUENTIALLY to respect rate limits (15 RPM for embeddings)
-        // The generateEmbedding function has built-in rate limiting
-        for (let i = 0; i < chunks.length; i++) {
-          if (quotaExhausted) {
-            console.log(`⚠️ Quota exhausted, stopping at chunk ${i}/${chunks.length}`);
-            break;
+        if (skipEmbeddings) {
+          // For syllabus topics: Batch insert without embeddings (fast)
+          const chunkRecords = chunks.map((chunk, i) => ({
+            user_id: effectiveUserId,
+            material_id: material.id,
+            chunk_index: chunk.index,
+            chunk_text: sanitizeChunkText(chunk.text),
+            embedding: null,
+            start_char: chunk.start_char,
+            end_char: chunk.end_char,
+            char_count: chunk.char_count,
+            word_count: chunk.word_count
+          }));
+          
+          const { error: batchError } = await supabaseAdmin
+            .from('document_chunks')
+            .insert(chunkRecords);
+          
+          if (batchError) {
+            console.error('❌ Batch insert failed:', batchError);
+          } else {
+            chunksStored = chunks.length;
+            console.log(`✓ Batch inserted ${chunksStored} syllabus topics`);
           }
-
-          const chunk = chunks[i];
+        } else {
+          // For notes/materials: Generate embeddings in parallel batches, then batch insert
+          console.log(`🚀 Generating ${chunks.length} embeddings in parallel...`);
+          const startTime = Date.now();
           
           try {
-            let chunkEmb: number[] | null = null;
+            // Generate all embeddings in parallel batches
+            const chunkTexts = chunks.map(chunk => sanitizeChunkText(chunk.text));
+            const chunkEmbeddings = await generateEmbeddings(chunkTexts);
             
-            // Only generate embeddings for non-syllabus materials
-            if (!skipEmbeddings) {
-              console.log(`🔄 Processing chunk ${i + 1}/${chunks.length}...`);
-              chunkEmb = await generateEmbedding(sanitizeChunkText(chunk.text));
-            }
+            const embeddingTime = ((Date.now() - startTime) / 1000).toFixed(1);
+            console.log(`✓ All embeddings generated in ${embeddingTime}s`);
             
-            // Insert chunk (with or without embedding)
-            const chunkRecord = {
+            // Batch insert all chunks with their embeddings
+            const chunkRecords = chunks.map((chunk, i) => ({
               user_id: effectiveUserId,
               material_id: material.id,
               chunk_index: chunk.index,
               chunk_text: sanitizeChunkText(chunk.text),
-              embedding: chunkEmb ? `[${chunkEmb.join(',')}]` : null, // Null for syllabus topics
+              embedding: chunkEmbeddings[i] ? `[${chunkEmbeddings[i].join(',')}]` : null,
               start_char: chunk.start_char,
               end_char: chunk.end_char,
               char_count: chunk.char_count,
               word_count: chunk.word_count
-            };
+            }));
             
-            const { error: chunkError } = await supabaseAdmin
-              .from('document_chunks')
-              .insert([chunkRecord]);
-            
-            if (chunkError) {
-              console.error(`❌ Failed to insert chunk ${i + 1}:`, chunkError);
-            } else {
-              chunksStored++;
-              if ((i + 1) % 5 === 0 || skipEmbeddings) {
-                console.log(`✓ Progress: ${chunksStored}/${chunks.length} ${skipEmbeddings ? 'topics' : 'chunks'} stored`);
+            // Insert in batches of 20 to avoid payload limits
+            const insertBatchSize = 20;
+            for (let i = 0; i < chunkRecords.length; i += insertBatchSize) {
+              const batch = chunkRecords.slice(i, i + insertBatchSize);
+              const { error: insertError } = await supabaseAdmin
+                .from('document_chunks')
+                .insert(batch);
+              
+              if (insertError) {
+                console.error(`❌ Insert batch ${Math.floor(i/insertBatchSize)+1} failed:`, insertError);
+              } else {
+                chunksStored += batch.length;
               }
             }
-          } catch (err: any) {
-            console.error(`Failed to ${skipEmbeddings ? 'store' : 'generate embedding for'} chunk ${chunk.index}:`, err);
             
-            // Check if quota exhausted (429 error)
-            if (!skipEmbeddings && (err?.message?.includes('429') || err?.message?.includes('RESOURCE_EXHAUSTED'))) {
-              console.log(`⚠️ Quota exhausted at chunk ${i + 1}/${chunks.length}`);
+            const totalTime = ((Date.now() - startTime) / 1000).toFixed(1);
+            console.log(`✓ Successfully stored ${chunksStored}/${chunks.length} chunks in ${totalTime}s`);
+            
+          } catch (embError: any) {
+            console.error('❌ Batch embedding generation failed:', embError);
+            
+            // Check if quota exhausted
+            if (embError?.message?.includes('429') || embError?.message?.includes('RESOURCE_EXHAUSTED')) {
               quotaExhausted = true;
-              break;
+              console.log('⚠️ Quota exhausted during batch embedding generation');
             }
           }
         }
         
         if (quotaExhausted) {
           console.log(`⚠️ Successfully stored ${chunksStored}/${chunks.length} chunks before quota exhaustion`);
-        } else {
-          console.log(`✓ Successfully stored ${chunksStored}/${chunks.length} chunks with embeddings`);
         }
       } catch (chunkError) {
         console.error('❌ Error storing chunks:', chunkError);
@@ -888,11 +915,25 @@ export async function POST(request: NextRequest) {
       }, { status: 400 })
     }
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error in upload API:', error)
+    
+    // Provide more specific error messages
+    let errorMessage = 'Internal server error';
+    let statusCode = 500;
+    
+    if (error.status === 429 || error.message?.includes('429') || error.message?.includes('quota') || error.message?.includes('rate limit')) {
+      errorMessage = 'AI service is temporarily busy. Please wait a minute and try again.';
+      statusCode = 429;
+    } else if (error.message?.includes('GEMINI') || error.message?.includes('Gemini')) {
+      errorMessage = 'AI processing failed. Please try again.';
+    } else if (error.message) {
+      errorMessage = error.message;
+    }
+    
     return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
+      { error: errorMessage, details: error.message || 'Unknown error' },
+      { status: statusCode }
     )
   }
 }
