@@ -111,7 +111,11 @@ ${chunk.chunk_text}`;
     if (combinedContent.length < 100) {
       console.log('Using fallback content due to insufficient material content')
       const examType = testConfig.examType || 'General'
+      const topicsContext = testConfig.topics && testConfig.topics.length > 0 
+        ? `The topics to cover are: ${testConfig.topics.join(', ')}. Generate questions specifically about these topics using your expert knowledge of ${examType} exam patterns.`
+        : '';
       combinedContent = `This is a ${examType} examination covering fundamental concepts and principles. 
+      ${topicsContext}
       The test includes topics relevant to ${examType} studies and practical applications. 
       Students should demonstrate understanding of key concepts, problem-solving abilities, and analytical skills.
       The examination format includes multiple choice questions testing various aspects of the subject matter.
