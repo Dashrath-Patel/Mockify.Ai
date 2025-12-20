@@ -9,6 +9,7 @@ import { Progress } from './ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { ScrollArea } from './ui/scroll-area';
 import { AITutorChat } from './AITutorChat';
+import { AdaptivePractice } from './AdaptivePractice';
 import { 
   Trophy, 
   Clock, 
@@ -21,7 +22,8 @@ import {
   Home,
   RotateCcw,
   Download,
-  Sparkles
+  Sparkles,
+  Brain
 } from 'lucide-react';
 
 interface Question {
@@ -41,8 +43,11 @@ interface TestResultsScreenProps {
   totalMarks: number;
   marksPerQuestion: number;
   negativeMarking: number;
+  userId?: string;
+  examType?: string;
   onRetakeTest: () => void;
   onGoHome: () => void;
+  onStartWeakTopicsTest?: (config: { topics: string[]; questionCount: number; difficulty: string }) => void;
 }
 
 export function TestResultsScreen({
@@ -53,8 +58,11 @@ export function TestResultsScreen({
   totalMarks,
   marksPerQuestion,
   negativeMarking,
+  userId,
+  examType = 'NEET',
   onRetakeTest,
-  onGoHome
+  onGoHome,
+  onStartWeakTopicsTest
 }: TestResultsScreenProps) {
   // Calculate results
   const calculateResults = () => {
@@ -111,6 +119,9 @@ export function TestResultsScreen({
     topic: string;
     questionIndex: number;
   } | null>(null);
+
+  // Adaptive Practice state
+  const [adaptiveOpen, setAdaptiveOpen] = useState(false);
 
   const openAITutor = (q: Question, index: number) => {
     setSelectedQuestion({
@@ -191,6 +202,17 @@ export function TestResultsScreen({
               <p className="text-gray-600 dark:text-gray-400 mt-1">{testTitle}</p>
             </div>
             <div className="flex items-center gap-3">
+              {userId && (
+                <Button
+                  variant="outline"
+                  onClick={() => setAdaptiveOpen(true)}
+                  className="flex items-center gap-2 border-primary text-primary hover:bg-primary/5"
+                >
+                  <Brain className="h-4 w-4" />
+                  <span className="hidden sm:inline">Practice Weak Topics</span>
+                  <span className="sm:hidden">Practice</span>
+                </Button>
+              )}
               <Button variant="outline" onClick={onGoHome} className="flex items-center gap-2">
                 <Home className="h-4 w-4" />
                 <span className="hidden sm:inline">Dashboard</span>
@@ -516,6 +538,17 @@ export function TestResultsScreen({
             userAnswer={selectedQuestion.userAnswer}
             topic={selectedQuestion.topic}
             questionIndex={selectedQuestion.questionIndex}
+          />
+        )}
+
+        {/* Adaptive Practice Dialog */}
+        {userId && (
+          <AdaptivePractice
+            open={adaptiveOpen}
+            onOpenChange={setAdaptiveOpen}
+            userId={userId}
+            examType={examType}
+            onStartWeakTopicsTest={onStartWeakTopicsTest}
           />
         )}
       </div>
