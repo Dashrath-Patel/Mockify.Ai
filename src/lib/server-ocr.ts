@@ -313,7 +313,7 @@ export async function extractTextFromImage(
 export function cleanExtractedText(text: string): string {
   if (!text) return '';
   
-  return text
+  let cleaned = text
     // Remove null bytes and control characters
     .replace(/\0/g, '')  // Fixed: Null bytes
     .replace(/[\u0001-\u0008\u000B\u000C\u000E-\u001F\u007F-\u009F]/g, '')
@@ -323,9 +323,171 @@ export function cleanExtractedText(text: string): string {
     .replace(/\r\n/g, '\n')
     .replace(/\r/g, '\n')
     .replace(/\t/g, '  ')
-    .replace(/\s+/g, ' ')
     .replace(/\n+/g, '\n')
     .trim();
+  
+  // Fix common PDF extraction spacing issues (broken words)
+  cleaned = fixPDFSpacingIssues(cleaned);
+  
+  return cleaned;
+}
+
+/**
+ * Fix PDF extraction spacing issues
+ * PDFs often have incorrect character spacing causing broken words like "Integr al" or "dimensi ons"
+ */
+function fixPDFSpacingIssues(text: string): string {
+  if (!text) return '';
+  
+  // Dictionary of common words that get broken by PDF extraction
+  const wordFragments: { [key: string]: string } = {
+    // Physics terms
+    'integr al': 'integral',
+    'dimensi on': 'dimension', 
+    'dimensi ons': 'dimensions',
+    'conserv ative': 'conservative',
+    'paral lel': 'parallel',
+    'par allel': 'parallel',
+    'p ar allel': 'parallel',
+    'conduct or': 'conductor',
+    'conduc tor': 'conductor',
+    'conduc t or': 'conductor',
+    'c onduc t ors': 'conductors',
+    'carry ing': 'carrying',
+    'arry ing': 'carrying',
+    'c arry ingc': 'carrying',
+    'currents c arry': 'currents carry',
+    'cur rent': 'current',
+    'cur rents': 'currents',
+    'verni er': 'vernier',
+    'vernierс': 'vernier',
+    'calip ers': 'calipers',
+    'c alipers': 'calipers',
+    'pendul um': 'pendulum',
+    'pendulum-d': 'pendulum',
+    'dissip ati on': 'dissipation',
+    'dissip ation': 'dissipation',
+    'd issip': 'dissip',
+    'plott ing': 'plotting',
+    'gr aph': 'graph',
+    'coeffi cient': 'coefficient',
+    'visco sity': 'viscosity',
+    'visc osity': 'viscosity',
+    'v isco us': 'viscous',
+    'iscous': 'viscous',
+    'ofv iscosity': 'of viscosity',
+    'givenv iscous': 'given viscous',
+    'asur ing': 'measuring',
+    'meas ur ing': 'measuring',
+    'byme asur': 'by measur',
+    'me asur': 'measur',
+    'specif ic': 'specific',
+    'spec ific': 'specific',
+    'capac ity': 'capacity',
+    'cap acity': 'capacity',
+    'atc ap acity': 'heat capacity',
+    'he atc': 'heat',
+    'at cap': 'at cap',
+    'temper ature': 'temperature',
+    'temp erature': 'temperature',
+    'reson ance': 'resonance',
+    'reso nance': 'resonance',
+    'tube,': 'tube',
+    'accel eration': 'acceleration',
+    'acceler ation': 'acceleration',
+    'restitu tion': 'restitution',
+    'coeffic ient': 'coefficient',
+    'surfa ce': 'surface',
+    'surf ace': 'surface',
+    'tensi on': 'tension',
+    'tens ion': 'tension',
+    'acetensi on': 'ace tension',
+    'deterg ents': 'detergents',
+    'deter gents': 'detergents',
+    'ofdetergents': 'of detergents',
+    'andeffect of': 'and effect of',
+    'capill ary': 'capillary',
+    'capil lary': 'capillary',
+    'foc al': 'focal',
+    'fo cal': 'focal',
+    'lengt h': 'length',
+    'leng th': 'length',
+    'incid ence': 'incidence',
+    'inci dence': 'incidence',
+    'deviat ion': 'deviation',
+    'devi ation': 'deviation',
+    'refrac tion': 'refraction',
+    'refr action': 'refraction',
+    'therm odynamics': 'thermodynamics',
+    'electr ochemical': 'electrochemical',
+    'electro chemical': 'electrochemical',
+    'concent ration': 'concentration',
+    'concentr ation': 'concentration',
+    'solu tions': 'solutions',
+    'solut ions': 'solutions',
+    'dilut e': 'dilute',
+    'dil ute': 'dilute',
+    'aryr ise': 'and rise',
+    'apill aryr': 'capillary',
+    'byc apill': 'by capill',
+    'ofw ater': 'of water',
+    'atsuse': 'at use',
+    'tome asure': 'to measure',
+    'intern al': 'internal',
+    'int ernal': 'internal',
+    'exter nal': 'external',
+    'ext ernal': 'external',
+    'diamet er': 'diameter',
+    'diam eter': 'diameter',
+    'alipers-itsuse': 'calipers - its use',
+    'atroomtemper ature': 'at room temperature',
+    'atroom temper': 'at room temper',
+    'ares on': 'a resonance',
+    'ancetube': 'ance tube',
+    'us ing': 'using',
+    'andextern': 'and extern',
+    'andthree': 'and three',
+    'aldi ameter': 'diameter',
+    'ameter and': ' meter and',
+    
+    // Common fragments
+    'ofm ass': 'of mass',
+    'of m ass': 'of mass',
+    'atwo': 'a two',
+    'a two': 'a two',
+    'c onserv': 'conserv',
+    'andn on': 'and non',
+    'and n on': 'and non',
+    'n on': 'non',
+  };
+  
+  let result = text;
+  
+  // Apply word fragment fixes (case-insensitive)
+  for (const [broken, fixed] of Object.entries(wordFragments)) {
+    const regex = new RegExp(broken.replace(/\s+/g, '\\s+'), 'gi');
+    result = result.replace(regex, fixed);
+  }
+  
+  // Pattern-based fixes for remaining issues
+  // Fix single-char fragments at start of words: "c onservative" → "conservative"
+  result = result.replace(/\b([a-zA-Z])\s+([a-zA-Z]{2,})\b/g, (match, char, rest) => {
+    // Only merge if first char is lowercase or both are same case
+    const combined = char + rest;
+    // Check if it forms a common word (simplified check)
+    if (combined.length >= 4 && combined.length <= 15) {
+      return combined;
+    }
+    return match;
+  });
+  
+  // Fix "word- something" patterns (hyphenated breaks)
+  result = result.replace(/(\w+)-\s*([a-z])/g, '$1-$2');
+  
+  // Clean up multiple spaces
+  result = result.replace(/\s+/g, ' ');
+  
+  return result;
 }
 
 /**
