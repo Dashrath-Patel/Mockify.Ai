@@ -4,8 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from './ui/alert-dialog';
-import { AlertCircle, Brain, Zap, Loader2, FileText, Trash2 } from 'lucide-react';
+import { AlertCircle, Brain, Zap, Loader2, FileText } from 'lucide-react';
 import { createClient } from '@/lib/supabase';
 import { toast } from 'sonner';
 import { TestInstructionsScreen } from './TestInstructionsScreen';
@@ -45,24 +44,21 @@ export function MockTests() {
   const [selectedExam, setSelectedExam] = useState('');
   const [selectedTopics, setSelectedTopics] = useState<string[]>([]);
   const [materials, setMaterials] = useState<Material[]>([]);
-  const [selectedMaterial, setSelectedMaterial] = useState('');
+  const [selectedMaterials, setSelectedMaterials] = useState<string[]>([]);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [loading, setLoading] = useState(false);
   const [generatingQuestions, setGeneratingQuestions] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
   const [questionCount, setQuestionCount] = useState(25);
   const [testDuration, setTestDuration] = useState(30);
+  const [negativeMarking, setNegativeMarking] = useState(0.66);
   const [questionInput, setQuestionInput] = useState('25');
   const [durationInput, setDurationInput] = useState('30');
+  const [negativeMarkingInput, setNegativeMarkingInput] = useState('0.66');
   const [userAnswers, setUserAnswers] = useState<Record<number, string>>({});
   const [timeSpent, setTimeSpent] = useState(0);
   const [availableTopics, setAvailableTopics] = useState<string[]>([]);
   const [availableExamTypes, setAvailableExamTypes] = useState<string[]>([]);
-  const [savedTests, setSavedTests] = useState<SavedTest[]>([]);
-  const [loadingSavedTests, setLoadingSavedTests] = useState(false);
-  const [syncStatus, setSyncStatus] = useState<'synced' | 'syncing' | 'offline'>('synced');
-  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
-  const [testToDelete, setTestToDelete] = useState<string | null>(null);
   const [syllabusMaterials, setSyllabusMaterials] = useState<Material[]>([]);
   const [selectedSyllabus, setSelectedSyllabus] = useState('');
   const [syllabusTopics, setSyllabusTopics] = useState<string[]>([]);
@@ -87,22 +83,162 @@ export function MockTests() {
         setUserId(user.id);
         await fetchMaterials(user.id);
         await fetchUserExamType(user.id);
-        await fetchSavedTests(user.id);
       }
     }
     fetchUserAndMaterials();
   }, []);
   
-  // Auto-load topic when material is selected
+  // Check for loaded test from Test History page
   useEffect(() => {
-    if (selectedMaterial) {
-      const material = materials.find(m => m.id === selectedMaterial);
-      if (material?.topic) {
-        setSelectedTopics([material.topic]);
-        console.log('✓ Auto-loaded topic:', material.topic);
+    const loadedTest = sessionStorage.getItem('loadTest');
+    if (loadedTest) {
+      try {
+        const test = JSON.parse(loadedTest);
+        setQuestions(test.questions || []);
+        setSelectedExam(test.exam_type || '');
+        setSelectedTopics(test.topic ? test.topic.split(', ') : []);
+        setTestDuration(test.duration || 30);
+        setTestName(test.name || '');
+        sessionStorage.removeItem('loadTest');
+        toast.success(`Loaded test: ${test.name}`);
+        // Show instructions screen
+        setCurrentScreen('instructions');
+      } catch (error) {
+        console.error('Error loading test from session:', error);
+        sessionStorage.removeItem('loadTest');
       }
     }
-  }, [selectedMaterial, materials]);
+  }, []);
+  
+  // Auto-load topics when materials are selected (combine topics from all selected materials)
+  useEffect(() => {
+    if (selectedMaterials.length > 0) {
+      const topics = new Set<string>();
+      selectedMaterials.forEach(materialId => {
+        const material = materials.find(m => m.id === materialId);
+        if (material?.topic) {
+          topics.add(material.topic);
+        }
+      });
+      if (topics.size > 0) {
+        setSelectedTopics(Array.from(topics));
+        console.log('✓ Auto-loaded topics from selected materials:', Array.from(topics));
+      }
+    }
+  }, [selectedMaterials, materials]);
+  
+  // Word dictionary for fixing PDF extraction issues
+  const WORD_DICTIONARY = new Set([
+    // Common English words
+    'the', 'of', 'and', 'in', 'to', 'for', 'with', 'by', 'on', 'at', 'from', 'as', 'is', 'are',
+    'a', 'an', 'or', 'not', 'but', 'be', 'can', 'has', 'have', 'had', 'do', 'does', 'did', 'will',
+    'this', 'that', 'these', 'those', 'their', 'its', 'using', 'between', 'into', 'through', 'during',
+    
+    // Physics terms
+    'physics', 'measurement', 'motion', 'force', 'forces', 'energy', 'work', 'power', 'momentum',
+    'rotational', 'gravitation', 'gravity', 'properties', 'matter', 'thermodynamics', 'kinetic',
+    'theory', 'gases', 'oscillations', 'waves', 'electrostatics', 'current', 'electricity',
+    'magnetic', 'magnetism', 'electromagnetic', 'induction', 'alternating', 'optics', 'ray',
+    'wave', 'dual', 'nature', 'radiation', 'atoms', 'nuclei', 'electronic', 'devices',
+    'semiconductor', 'communication', 'systems', 'units', 'dimensions', 'kinematics', 'dynamics',
+    'conservation', 'collision', 'elasticity', 'surface', 'tension', 'viscosity', 'fluid',
+    'thermal', 'expansion', 'calorimetry', 'heat', 'transfer', 'specific', 'capacity', 'latent',
+    'laws', 'entropy', 'simple', 'harmonic', 'pendulum', 'resonance', 'sound', 'doppler', 'effect',
+    'superposition', 'standing', 'beats', 'electric', 'field', 'potential', 'capacitance',
+    'dielectrics', 'resistance', 'ohms', 'law', 'cells', 'kirchhoffs', 'wheatstone', 'bridge',
+    'potentiometer', 'biot', 'savart', 'amperes', 'circuital', 'solenoid', 'toroid', 'faradays',
+    'reflection', 'refraction', 'total', 'internal', 'mirrors', 'lenses', 'magnification',
+    'microscope', 'telescope', 'interference', 'diffraction', 'polarization', 'photoelectric',
+    'integral', 'derivative', 'anti', 'conservative', 'non', 'parallel', 'carrying', 'conductors',
+    'centre', 'mass', 'two', 'three', 'particle', 'vernier', 'calipers', 'screw', 'gauge',
+    'external', 'diameter', 'meter', 'temperature', 'room', 'speed', 'air', 'dissipation',
+    'plotting', 'acceleration', 'due', 'coefficient', 'restitution', 'measuring', 'liquid',
+    'capillary', 'rise', 'focal', 'length', 'angle', 'incidence', 'deviation',
+    
+    // Chemistry terms
+    'chemistry', 'chemical', 'atomic', 'structure', 'periodic', 'table', 'classification',
+    'bonding', 'molecular', 'states', 'equilibrium', 'ionic', 'solutions', 'redox', 'reactions',
+    'electrochemistry', 'concentration', 'dilute', 'electrochemical', 'different', 'methods',
+    
+    // Biology terms  
+    'biology', 'living', 'world', 'plant', 'kingdom', 'animal', 'cell', 'unit', 'biomolecules',
+    'division', 'transport', 'plants', 'mineral', 'nutrition', 'photosynthesis', 'respiration',
+    
+    // Common scientific words
+    'given', 'method', 'principle', 'characteristics', 'determination', 'experiment', 'practical',
+    'study', 'verification', 'identification', 'collection', 'mixed', 'resistor', 'LED', 'plot',
+    'graph', 'curve', 'curves', 'finding', 'reverse', 'breakdown', 'zener', 'carbon'
+  ]);
+
+  // Fix broken words (words incorrectly split like "Integr al" → "Integral")
+  const fixBrokenWords = (text: string): string => {
+    if (!text) return text;
+    
+    const parts = text.split(/\s+/);
+    const fixedParts: string[] = [];
+    
+    let i = 0;
+    while (i < parts.length) {
+      let merged = false;
+      for (let j = 1; j <= 3 && i + j < parts.length; j++) {
+        const candidateParts = parts.slice(i, i + j + 1);
+        const candidate = candidateParts.join('').toLowerCase();
+        
+        if (WORD_DICTIONARY.has(candidate)) {
+          const firstPart = parts[i];
+          const isUpperCase = firstPart === firstPart.toUpperCase() && firstPart.length > 1;
+          const isCapitalized = firstPart[0] === firstPart[0].toUpperCase();
+          
+          if (isUpperCase) {
+            fixedParts.push(candidate.toUpperCase());
+          } else if (isCapitalized) {
+            fixedParts.push(candidate.charAt(0).toUpperCase() + candidate.slice(1));
+          } else {
+            fixedParts.push(candidate);
+          }
+          i += j + 1;
+          merged = true;
+          break;
+        }
+      }
+      
+      if (!merged) {
+        fixedParts.push(parts[i]);
+        i++;
+      }
+    }
+    
+    return fixedParts.join(' ');
+  };
+  
+  // Fix concatenated words (stuck together like "Specificheat" → "Specific heat")
+  const fixConcatenatedWords = (text: string): string => {
+    if (!text || text.length < 10) return text;
+    
+    const spaceCount = (text.match(/\s/g) || []).length;
+    const wordEstimate = text.length / 6;
+    if (spaceCount > wordEstimate * 0.5) return text;
+    
+    let result = text;
+    result = result.replace(/([a-z])([A-Z])/g, '$1 $2');
+    
+    const sortedWords = Array.from(WORD_DICTIONARY).sort((a, b) => b.length - a.length);
+    for (const word of sortedWords) {
+      if (word.length < 3) continue;
+      const pattern = new RegExp(`([a-zA-Z])(?=${word})`, 'gi');
+      result = result.replace(pattern, '$1 ');
+    }
+    
+    return result.replace(/\s+/g, ' ').trim();
+  };
+  
+  // Fix all PDF text issues
+  const fixPDFTextIssues = (text: string): string => {
+    if (!text || text.length < 3) return text;
+    let result = fixBrokenWords(text);
+    result = fixConcatenatedWords(result);
+    return result;
+  };
   
   // Extract topics when syllabus is selected
   useEffect(() => {
@@ -111,9 +247,32 @@ export function MockTests() {
       if (syllabus) {
         const structuredContent = (syllabus as any).structured_content;
         if (structuredContent?.syllabus_data?.topics) {
-          const topics = structuredContent.syllabus_data.topics;
+          // Filter out invalid topics (empty, too short, or containing junk text)
+          const rawTopics = structuredContent.syllabus_data.topics;
+          const invalidPatterns = [
+            /^the\s+(detailed|same|above|following)/i,
+            /^(has|have)\s+been/i,
+            /uploaded|website|nmc|notification/i,
+            /www\.|http|@|\.com/i,
+          ];
+          
+          const topics = rawTopics
+            .filter((t: string) => {
+              if (!t || typeof t !== 'string') return false;
+              const trimmed = t.trim();
+              // Must be between 3-150 chars and have letters
+              if (trimmed.length < 3 || trimmed.length > 150) return false;
+              if (!/[a-zA-Z]/.test(trimmed)) return false;
+              // Must not match invalid patterns
+              for (const pattern of invalidPatterns) {
+                if (pattern.test(trimmed)) return false;
+              }
+              return true;
+            })
+            .map((t: string) => fixPDFTextIssues(t.trim())); // Fix broken and concatenated words
+          
           setSyllabusTopics(topics);
-          console.log('✓ Extracted', topics.length, 'topics from syllabus');
+          console.log('✓ Extracted', topics.length, 'valid topics from syllabus (filtered from', rawTopics.length, ')');
           toast.success(`Found ${topics.length} topics in syllabus`);
         } else {
           setSyllabusTopics([]);
@@ -193,8 +352,8 @@ export function MockTests() {
   }
 
   const handleGenerateTest = async () => {
-    if (!selectedMaterial || !selectedExam || selectedTopics.length === 0) {
-      toast.error('Please select material, exam, and at least one topic');
+    if (selectedMaterials.length === 0 || !selectedExam || selectedTopics.length === 0) {
+      toast.error('Please select at least one material, exam type, and at least one topic');
       return;
     }
     
@@ -213,7 +372,7 @@ export function MockTests() {
           'Authorization': `Bearer ${session.access_token}`
         },
         body: JSON.stringify({
-          materialIds: [selectedMaterial],
+          materialIds: selectedMaterials,
           userId: userId,
           testConfig: {
             examType: selectedExam,
@@ -330,10 +489,8 @@ export function MockTests() {
     }
     
     localStorage.setItem(savedTestsKey, JSON.stringify(tests));
-    setSavedTests(tests);
     
     // 2. Sync to database (background, non-blocking)
-    setSyncStatus('syncing');
     try {
       // Map exam type to valid ENUM value
       const validExamTypes = ['UPSC', 'Banking', 'SSC', 'NEET', 'JEE', 'CAT', 'GATE'];
@@ -372,7 +529,7 @@ export function MockTests() {
         difficulty: q.difficulty as 'easy' | 'medium' | 'hard',
         explanation: q.explanation,
         marks: 2,
-        negative_marks: 0.66
+        negative_marks: negativeMarking
       }));
       
       const { error: questionsError } = await supabase
@@ -381,181 +538,12 @@ export function MockTests() {
       
       if (questionsError) throw questionsError;
       
-      setSyncStatus('synced');
       console.log('✓ Test saved to database:', testId);
       
     } catch (error) {
-      setSyncStatus('offline');
       console.error('⚠️ Database save failed (data safe in localStorage):', error);
       // Don't show error to user - localStorage has the data
       // Silently log for debugging
-    }
-  };
-
-  // Fetch saved tests from database with localStorage fallback (hybrid approach)
-  const fetchSavedTests = async (uid: string) => {
-    setLoadingSavedTests(true);
-    const savedTestsKey = `saved_tests_${uid}`;
-    
-    try {
-      // 1. Try loading from database (primary source)
-      const { data: dbTests, error: dbError } = await supabase
-        .from('mock_tests')
-        .select(`
-          id,
-          title,
-          exam_type,
-          topic,
-          total_questions,
-          time_limit,
-          created_at,
-          test_questions (
-            question_number,
-            question_text,
-            options,
-            correct_answer,
-            topic,
-            difficulty,
-            explanation
-          )
-        `)
-        .eq('user_id', uid)
-        .order('created_at', { ascending: false })
-        .limit(50);
-      
-      if (!dbError && dbTests && dbTests.length > 0) {
-        // Convert database format to SavedTest format
-        const formattedTests: SavedTest[] = dbTests.map(test => {
-          // Extract original exam type from title (format: "ExamType - Topic")
-          const examTypeFromTitle = test.title.split(' - ')[0] || test.exam_type;
-          
-          return {
-            id: test.id,
-            name: test.title,
-            exam_type: examTypeFromTitle, // Use original exam type from title
-            topic: test.topic || 'General',
-            questions: (test.test_questions || []).map((q: any) => ({
-              question: q.question_text,
-              options: q.options,
-              correctAnswer: q.correct_answer,
-              explanation: q.explanation,
-              topic: q.topic,
-              difficulty: q.difficulty
-            })),
-            duration: Math.floor(test.time_limit / 60),
-            created_at: test.created_at
-          };
-        });
-        
-        setSavedTests(formattedTests);
-        setSyncStatus('synced');
-        
-        // Update localStorage cache with latest from DB
-        localStorage.setItem(savedTestsKey, JSON.stringify(formattedTests));
-        console.log('✓ Loaded', formattedTests.length, 'tests from database');
-        setLoadingSavedTests(false);
-        return;
-      }
-    } catch (error) {
-      console.warn('⚠️ Database fetch failed, using localStorage:', error);
-      setSyncStatus('offline');
-    }
-    
-    // 2. Fallback to localStorage (offline mode or DB error)
-    try {
-      const existingTests = localStorage.getItem(savedTestsKey);
-      if (existingTests) {
-        const localTests = JSON.parse(existingTests);
-        setSavedTests(localTests);
-        console.log('✓ Loaded', localTests.length, 'tests from localStorage (offline mode)');
-      } else {
-        setSavedTests([]);
-      }
-    } catch (error) {
-      console.error('Error fetching saved tests:', error);
-      setSavedTests([]);
-    } finally {
-      setLoadingSavedTests(false);
-    }
-  };
-
-  // Load a saved test
-  const loadSavedTest = (test: SavedTest) => {
-    setQuestions(test.questions);
-    setSelectedExam(test.exam_type);
-    setSelectedTopics(test.topic.split(', '));
-    setTestDuration(test.duration);
-    setCurrentScreen('instructions');
-    toast.success(`Loaded test: ${test.name}`);
-  };
-
-  // Delete a saved test from both database and localStorage
-  const deleteSavedTest = async (testId: string) => {
-    if (!userId) return;
-    
-    // Find the test to show how many questions will be deleted
-    const testToRemove = savedTests.find(t => t.id === testId);
-    const questionCount = testToRemove?.questions.length || 0;
-    
-    // 1. Delete from localStorage immediately (instant feedback)
-    const savedTestsKey = `saved_tests_${userId}`;
-    const updatedTests = savedTests.filter(test => test.id !== testId);
-    localStorage.setItem(savedTestsKey, JSON.stringify(updatedTests));
-    setSavedTests(updatedTests);
-    
-    // Show deleting toast
-    const deletingToast = toast.loading(
-      `Deleting test and ${questionCount} questions...`
-    );
-    
-    // 2. Sync deletion to database (background)
-    try {
-      const { error } = await supabase
-        .from('mock_tests')
-        .delete()
-        .eq('id', testId)
-        .eq('user_id', userId);
-      
-      if (error) throw error;
-      
-      // Success - questions automatically deleted via CASCADE
-      toast.success(
-        `Test deleted successfully!`,
-        { 
-          id: deletingToast
-        }
-      );
-      console.log('✓ Test deleted from database:', testId);
-      console.log(`✓ ${questionCount} questions auto-deleted via CASCADE`);
-      
-    } catch (error) {
-      console.error('⚠️ Database deletion failed (test removed locally):', error);
-      toast.warning(
-        'Test removed locally',
-        {
-          id: deletingToast,
-          description: 'Database sync failed, but data removed from this device'
-        }
-      );
-      // Don't show error - already deleted from UI
-    }
-    
-    // Close confirmation dialog
-    setDeleteConfirmOpen(false);
-    setTestToDelete(null);
-  };
-  
-  // Handle delete button click (show confirmation)
-  const handleDeleteClick = (testId: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    setTestToDelete(testId);
-    setDeleteConfirmOpen(true);
-  };
-  
-  // Confirm deletion
-  const confirmDelete = () => {
-    if (testToDelete) {
-      deleteSavedTest(testToDelete);
     }
   };
   
@@ -570,10 +558,94 @@ export function MockTests() {
     setCurrentScreen('test');
   };
 
-  const handleSubmitTest = (answers: Record<number, string>, timeTaken: number) => {
+  const handleSubmitTest = async (answers: Record<number, string>, timeTaken: number) => {
     setUserAnswers(answers);
     setTimeSpent(timeTaken);
     setCurrentScreen('results');
+
+    // Save test results to database for analytics
+    if (userId && questions.length > 0) {
+      try {
+        // Calculate topic-wise performance
+        const topicStats: Record<string, { correct: number; total: number }> = {};
+        
+        questions.forEach((q, index) => {
+          const topic = q.topic || 'General';
+          if (!topicStats[topic]) {
+            topicStats[topic] = { correct: 0, total: 0 };
+          }
+          topicStats[topic].total++;
+          
+          const userAnswer = answers[index];
+          if (userAnswer) {
+            const userAnswerLetter = userAnswer.charAt(0).toUpperCase();
+            if (userAnswerLetter === q.correctAnswer.toUpperCase()) {
+              topicStats[topic].correct++;
+            }
+          }
+        });
+
+        const topicWisePerformance = Object.entries(topicStats).map(([topic, stats]) => ({
+          topic,
+          correct: stats.correct,
+          total: stats.total,
+          percentage: Math.round((stats.correct / stats.total) * 100)
+        }));
+
+        // Identify strengths and weaknesses
+        const strengths = topicWisePerformance
+          .filter(t => t.percentage >= 70)
+          .map(t => t.topic);
+        const weaknesses = topicWisePerformance
+          .filter(t => t.percentage < 70)
+          .map(t => t.topic);
+
+        // Calculate overall score
+        let correctCount = 0;
+        questions.forEach((q, index) => {
+          const userAnswer = answers[index];
+          if (userAnswer) {
+            const userAnswerLetter = userAnswer.charAt(0).toUpperCase();
+            if (userAnswerLetter === q.correctAnswer.toUpperCase()) {
+              correctCount++;
+            }
+          }
+        });
+
+        const analytics = {
+          topicWisePerformance,
+          strengths,
+          weaknesses,
+          recommendations: weaknesses.length > 0 
+            ? [`Focus on improving: ${weaknesses.join(', ')}`]
+            : ['Great job! Keep practicing to maintain your performance.']
+        };
+
+        // Save to database via API
+        const response = await fetch('/api/save-results', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId,
+            score: Math.round((correctCount / questions.length) * 100),
+            totalQuestions: questions.length,
+            correctAnswers: correctCount,
+            timeTaken,
+            analytics
+          })
+        });
+
+        if (response.ok) {
+          console.log('✅ Test results saved for adaptive practice analysis');
+        } else {
+          const errorData = await response.json();
+          console.error('Failed to save results:', errorData.error);
+        }
+      } catch (error) {
+        console.error('Failed to save test results:', error);
+        // Don't block the UI, just log the error
+      }
+    }
   };
 
   const handleRetakeTest = () => {
@@ -588,6 +660,195 @@ export function MockTests() {
     setUserAnswers({});
   };
 
+  // Handle starting a weak topics test from adaptive practice
+  const handleStartWeakTopicsTest = async (config: { topics: string[]; questionCount: number; difficulty: string }) => {
+    setGeneratingQuestions(true);
+    setSelectedTopics(config.topics);
+    setQuestionCount(config.questionCount);
+    
+    // Generate test name
+    const topicNames = config.topics.length > 2 
+      ? `${config.topics.slice(0, 2).join(', ')} +${config.topics.length - 2} more`
+      : config.topics.join(', ');
+    setTestName(`Weak Topics Practice - ${topicNames}`);
+
+    try {
+      // Fetch user's materials
+      const { data: userMaterials } = await supabase
+        .from('study_materials')
+        .select('id')
+        .eq('user_id', userId)
+        .eq('processing_status', 'completed');
+
+      const materialIds = userMaterials?.map(m => m.id) || [];
+
+      // Generate questions for weak topics
+      const response = await fetch('/api/generate-questions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId,
+          materialIds: materialIds.length > 0 ? materialIds : [],
+          testConfig: {
+            examType: selectedExam || 'NEET',
+            topics: config.topics,
+            questionCount: config.questionCount,
+            difficulty: config.difficulty === 'mixed' ? 'medium' : config.difficulty,
+            testName: `Weak Topics Practice - ${config.topics.slice(0, 2).join(', ')}${config.topics.length > 2 ? ` +${config.topics.length - 2} more` : ''}`
+          }
+        })
+      });
+
+      const data = await response.json();
+
+      if (data.questions && data.questions.length > 0) {
+        const generatedQuestions = data.questions;
+        const duration = Math.ceil(config.questionCount * 1.5); // 1.5 min per question
+        const finalTestName = `Weak Topics Practice - ${topicNames}`;
+        
+        setQuestions(generatedQuestions);
+        setTestDuration(duration);
+        setTestName(finalTestName);
+        
+        // Save weak topics test to database
+        await saveWeakTopicsTest(generatedQuestions, finalTestName, config.topics, duration, config.difficulty);
+        
+        toast.success(`Generated ${generatedQuestions.length} questions for weak topics!`);
+        setCurrentScreen('instructions');
+      } else {
+        toast.error('Failed to generate questions. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error generating weak topics test:', error);
+      toast.error('Error generating test. Please try again.');
+    } finally {
+      setGeneratingQuestions(false);
+    }
+  };
+
+  // Save weak topics test to database
+  const saveWeakTopicsTest = async (
+    generatedQuestions: Question[], 
+    testTitle: string, 
+    topics: string[], 
+    duration: number,
+    difficulty: string
+  ) => {
+    if (!userId) return;
+    
+    const testId = crypto.randomUUID();
+    const topicString = topics.join(', ');
+    const timestamp = new Date().toISOString();
+    
+    // Save to localStorage first (instant feedback)
+    const newTest: SavedTest = {
+      id: testId,
+      name: testTitle,
+      exam_type: selectedExam || 'NEET',
+      topic: topicString,
+      questions: generatedQuestions,
+      duration: duration,
+      created_at: timestamp
+    };
+    
+    const savedTestsKey = `saved_tests_${userId}`;
+    const existingTests = localStorage.getItem(savedTestsKey);
+    const tests = existingTests ? JSON.parse(existingTests) : [];
+    tests.unshift(newTest);
+    
+    if (tests.length > 50) {
+      tests.length = 50;
+    }
+    
+    localStorage.setItem(savedTestsKey, JSON.stringify(tests));
+    
+    // Sync to database (background, non-blocking)
+    try {
+      // Map exam type to valid ENUM value
+      const validExamTypes = ['UPSC', 'Banking', 'SSC', 'NEET', 'JEE', 'CAT', 'GATE'];
+      const examTypeForDB = validExamTypes.includes(selectedExam || '') ? selectedExam : 'Other';
+      
+      // Map difficulty to valid ENUM value
+      const difficultyMap: Record<string, 'easy' | 'medium' | 'hard'> = {
+        'easy': 'easy',
+        'medium': 'medium',
+        'hard': 'hard',
+        'mixed': 'medium'
+      };
+      const difficultyForDB = difficultyMap[difficulty] || 'medium';
+      
+      // Save test metadata to mock_tests table
+      const { error: testError } = await supabase
+        .from('mock_tests')
+        .insert({
+          id: testId,
+          user_id: userId,
+          exam_type: examTypeForDB,
+          topic: topicString,
+          title: testTitle,
+          description: `Weak topics practice test focusing on: ${topics.slice(0, 3).join(', ')}${topics.length > 3 ? ` and ${topics.length - 3} more` : ''}`,
+          is_ai_generated: true,
+          test_type: 'custom', // Using 'custom' for weak topics (compatible with current schema)
+          difficulty: difficultyForDB,
+          total_questions: generatedQuestions.length,
+          time_limit: duration * 60,
+          status: 'draft'
+        });
+      
+      if (testError) throw testError;
+      
+      // Save questions to test_questions table
+      const questionsToInsert = generatedQuestions.map((q, index) => ({
+        test_id: testId,
+        question_number: index + 1,
+        question_text: q.question,
+        options: q.options,
+        correct_answer: q.correctAnswer,
+        topic: q.topic,
+        difficulty: (difficultyMap[q.difficulty] || difficultyForDB) as 'easy' | 'medium' | 'hard',
+        explanation: q.explanation,
+        marks: 2,
+        negative_marks: negativeMarking
+      }));
+      
+      const { error: questionsError } = await supabase
+        .from('test_questions')
+        .insert(questionsToInsert);
+      
+      if (questionsError) throw questionsError;
+      
+      console.log('✓ Weak topics test saved to database:', testId);
+      
+    } catch (error) {
+      console.error('⚠️ Database save failed for weak topics test (data safe in localStorage):', error);
+    }
+  };
+
+  // Full-screen loading overlay for generating questions (renders on all screens)
+  const GeneratingOverlay = () => generatingQuestions ? (
+    <div className="fixed inset-0 bg-white/95 dark:bg-[#030213]/95 z-50 flex items-center justify-center">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="text-center max-w-sm mx-4"
+      >
+        <div className="relative mx-auto w-20 h-20 mb-6">
+          <div className="absolute inset-0 rounded-full border-4 border-gray-100 dark:border-gray-800"></div>
+          <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-[#030213] dark:border-t-purple-500 animate-spin"></div>
+          <div className="absolute inset-3 rounded-full bg-gradient-to-br from-[#030213] to-[#1a1a2e] dark:from-purple-600 dark:to-purple-800 flex items-center justify-center">
+            <Brain className="w-6 h-6 text-white" />
+          </div>
+        </div>
+        <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+          Generating Your Test
+        </h3>
+        <p className="text-gray-500 dark:text-gray-400 text-sm">
+          AI is crafting questions for your weak topics...
+        </p>
+      </motion.div>
+    </div>
+  ) : null;
+
   // Show Instructions Screen
   if (currentScreen === 'instructions') {
     const testTitle = testName.trim() || generateSmartTestName(selectedTopics);
@@ -599,7 +860,7 @@ export function MockTests() {
         totalQuestions={questions.length}
         totalMarks={questions.length * 2}
         marksPerQuestion={2}
-        negativeMarking={0.66}
+        negativeMarking={negativeMarking}
         onStartTest={handleStartTest}
         onGoBack={handleGoHome}
       />
@@ -615,6 +876,7 @@ export function MockTests() {
         questions={questions}
         testTitle={testTitle}
         duration={testDuration}
+        negativeMarking={negativeMarking}
         onSubmitTest={handleSubmitTest}
         onExitTest={handleGoHome}
       />
@@ -626,29 +888,38 @@ export function MockTests() {
     const testTitle = testName.trim() || generateSmartTestName(selectedTopics);
     
     return (
-      <TestResultsScreen
-        questions={questions}
-        userAnswers={userAnswers}
-        timeSpent={timeSpent}
-        testTitle={testTitle}
-        totalMarks={questions.length * 2}
-        marksPerQuestion={2}
-        negativeMarking={0.66}
-        onRetakeTest={handleRetakeTest}
-        onGoHome={handleGoHome}
-      />
+      <>
+        <GeneratingOverlay />
+        <TestResultsScreen
+          questions={questions}
+          userAnswers={userAnswers}
+          timeSpent={timeSpent}
+          testTitle={testTitle}
+          totalMarks={questions.length * 2}
+          marksPerQuestion={2}
+          negativeMarking={negativeMarking}
+          userId={userId || undefined}
+          examType={selectedExam}
+          onRetakeTest={handleRetakeTest}
+          onGoHome={handleGoHome}
+          onStartWeakTopicsTest={handleStartWeakTopicsTest}
+        />
+      </>
     );
   }
 
   return (
     <div className="p-4 md:p-6 lg:p-8 max-w-[1600px] mx-auto space-y-6">
+      {/* Full-screen loading overlay for generating questions */}
+      <GeneratingOverlay />
+      
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         className="mb-8"
       >
-        <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-2">Mock Tests</h1>
-        <p className="text-gray-600 dark:text-gray-400 text-base">Practice with AI-generated tests tailored to your needs</p>
+        <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-2">Generate Test</h1>
+        <p className="text-gray-600 dark:text-gray-400 text-base">Create AI-powered tests tailored to your needs</p>
       </motion.div>
 
       <motion.div
@@ -670,23 +941,83 @@ export function MockTests() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {/* Multi-Select Materials */}
                     <div className="space-y-2">
-                      <label className="text-sm text-gray-700 dark:text-gray-300 font-semibold">Select Material</label>
-                      <Select value={selectedMaterial} onValueChange={setSelectedMaterial} disabled={loading}>
-                        <SelectTrigger className="rounded-lg bg-white dark:bg-slate-800/50 border-2 border-gray-300 dark:border-slate-700 text-gray-900 dark:text-gray-200 hover:border-violet-400 dark:hover:border-violet-600 transition-colors">
-                          <SelectValue placeholder={loading ? "Loading..." : materials.length === 0 ? "No materials uploaded" : "Choose material"} />
-                        </SelectTrigger>
-                        <SelectContent className="bg-white dark:bg-slate-900 border-2 border-gray-200 dark:border-slate-700">
-                          {materials.map((material) => (
-                            <SelectItem key={material.id} value={material.id}>
-                              <div className="flex items-center gap-2">
-                                <FileText className="h-4 w-4" />
-                                {material.file_url?.split('/').pop()?.substring(0, 30) || 'Unnamed'}
+                      <label className="text-sm text-gray-700 dark:text-gray-300 font-semibold flex items-center gap-2">
+                        Select Materials
+                        {selectedMaterials.length > 0 && (
+                          <span className="text-xs bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-400 px-2 py-0.5 rounded-full">
+                            {selectedMaterials.length} selected
+                          </span>
+                        )}
+                      </label>
+                      <div className="relative">
+                        <div className="rounded-lg bg-white dark:bg-slate-800/50 border-2 border-gray-300 dark:border-slate-700 hover:border-violet-400 dark:hover:border-violet-600 transition-colors max-h-[180px] overflow-y-auto">
+                          {loading ? (
+                            <div className="p-3 text-gray-500 text-sm">Loading...</div>
+                          ) : materials.length === 0 ? (
+                            <div className="p-3 text-gray-500 text-sm">No materials uploaded</div>
+                          ) : (
+                            <div className="p-2 space-y-1">
+                              {/* Select All / Clear All */}
+                              <div className="flex gap-2 pb-2 border-b border-gray-200 dark:border-slate-700 mb-2">
+                                <button
+                                  type="button"
+                                  onClick={() => setSelectedMaterials(materials.map(m => m.id))}
+                                  className="text-xs text-violet-600 hover:text-violet-800 dark:text-violet-400 dark:hover:text-violet-300 font-medium"
+                                >
+                                  Select All
+                                </button>
+                                <span className="text-gray-300 dark:text-gray-600">|</span>
+                                <button
+                                  type="button"
+                                  onClick={() => setSelectedMaterials([])}
+                                  className="text-xs text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+                                >
+                                  Clear
+                                </button>
                               </div>
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                              {materials.map((material) => {
+                                // Clean up the filename for display
+                                const rawName = material.file_url?.split('/').pop() || material.filename || 'Unnamed';
+                                // Remove timestamp prefix (e.g., "1766263146288-") and file extension
+                                const cleanName = rawName
+                                  .replace(/^\d{13}-/, '') // Remove 13-digit timestamp prefix
+                                  .replace(/\.(pdf|docx|doc)$/i, '') // Remove file extension
+                                  .replace(/_/g, ' ') // Replace underscores with spaces
+                                  .trim();
+                                
+                                return (
+                                <label
+                                  key={material.id}
+                                  className={`flex items-center gap-2 p-2 rounded-lg cursor-pointer transition-colors ${
+                                    selectedMaterials.includes(material.id)
+                                      ? 'bg-violet-50 dark:bg-violet-900/20 border border-violet-300 dark:border-violet-700'
+                                      : 'hover:bg-gray-50 dark:hover:bg-slate-700/50 border border-transparent'
+                                  }`}
+                                >
+                                  <input
+                                    type="checkbox"
+                                    checked={selectedMaterials.includes(material.id)}
+                                    onChange={(e) => {
+                                      if (e.target.checked) {
+                                        setSelectedMaterials([...selectedMaterials, material.id]);
+                                      } else {
+                                        setSelectedMaterials(selectedMaterials.filter(id => id !== material.id));
+                                      }
+                                    }}
+                                    className="h-4 w-4 rounded border-gray-300 text-violet-600 focus:ring-violet-500"
+                                  />
+                                  <FileText className="h-4 w-4 text-gray-500 dark:text-gray-400 flex-shrink-0" />
+                                  <span className="text-sm text-gray-700 dark:text-gray-300 truncate" title={cleanName}>
+                                    {cleanName.length > 30 ? cleanName.substring(0, 30) + '...' : cleanName}
+                                  </span>
+                                </label>
+                              )})}
+                            </div>
+                          )}
+                        </div>
+                      </div>
                     </div>
                     
                     {/* Syllabus Selection - Middle (Always visible) */}
@@ -704,14 +1035,22 @@ export function MockTests() {
                         </SelectTrigger>
                         <SelectContent className="bg-white dark:bg-slate-900 border-2 border-gray-200 dark:border-slate-700">
                           {syllabusMaterials.length > 0 ? (
-                            syllabusMaterials.map((syllabus) => (
+                            syllabusMaterials.map((syllabus) => {
+                              // Clean up syllabus filename for display
+                              const rawName = syllabus.file_url?.split('/').pop() || 'Unnamed Syllabus';
+                              const cleanName = rawName
+                                .replace(/^\d{13}-/, '') // Remove timestamp prefix
+                                .replace(/\.(pdf|docx|doc)$/i, '') // Remove extension
+                                .replace(/_/g, ' '); // Replace underscores
+                              
+                              return (
                               <SelectItem key={syllabus.id} value={syllabus.id}>
                                 <div className="flex items-center gap-2">
                                   <FileText className="h-4 w-4 text-violet-600" />
-                                  {syllabus.file_url?.split('/').pop()?.substring(0, 40) || 'Unnamed Syllabus'}
+                                  {cleanName.length > 40 ? cleanName.substring(0, 40) + '...' : cleanName}
                                 </div>
                               </SelectItem>
-                            ))
+                            )})
                           ) : (
                             <SelectItem value="none" disabled>
                               <div className="text-gray-500 text-sm">Upload a syllabus first</div>
@@ -895,6 +1234,41 @@ export function MockTests() {
                       />
                       <p className="text-xs text-gray-500 dark:text-gray-400">Min: 10, Max: 180 minutes</p>
                     </div>
+                    
+                    <div className="space-y-2">
+                      <label className="text-sm text-gray-700 dark:text-gray-300 font-semibold">Negative Marking (per wrong answer)</label>
+                      <Input
+                        type="text"
+                        value={negativeMarkingInput}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          // Allow empty, numbers, and decimal
+                          if (val === '' || /^\d*\.?\d*$/.test(val)) {
+                            setNegativeMarkingInput(val);
+                            const num = parseFloat(val);
+                            if (!isNaN(num)) {
+                              setNegativeMarking(Math.min(2, Math.max(0, num)));
+                            }
+                          }
+                        }}
+                        onBlur={() => {
+                          // On blur, ensure valid value
+                          const num = parseFloat(negativeMarkingInput);
+                          if (isNaN(num) || num < 0) {
+                            setNegativeMarkingInput('0');
+                            setNegativeMarking(0);
+                          } else if (num > 2) {
+                            setNegativeMarkingInput('2');
+                            setNegativeMarking(2);
+                          } else {
+                            setNegativeMarkingInput(num.toString());
+                            setNegativeMarking(num);
+                          }
+                        }}
+                        className="rounded-lg bg-white dark:bg-slate-800/50 border-2 border-gray-300 dark:border-slate-700 text-gray-900 dark:text-gray-200"
+                      />
+                      <p className="text-xs text-gray-500 dark:text-gray-400">0 = No negative marking, Max: 2</p>
+                    </div>
                   </div>
 
                   <div className="bg-violet-50 dark:bg-violet-600/10 p-4 rounded-xl border-2 border-violet-200 dark:border-violet-500/30">
@@ -905,7 +1279,8 @@ export function MockTests() {
                         <p className="text-sm text-gray-700 dark:text-gray-400 mt-1">
                           • {questionCount} Questions<br />
                           • {testDuration} Minutes Duration<br />
-                          • AI-Generated from your uploaded materials
+                          • +2 per correct, {negativeMarking > 0 ? `-${negativeMarking} per wrong` : 'No negative marking'}<br />
+                          • AI-Generated from {selectedMaterials.length > 0 ? `${selectedMaterials.length} material${selectedMaterials.length > 1 ? 's' : ''}` : 'your uploaded materials'}
                         </p>
                       </div>
                     </div>
@@ -913,7 +1288,7 @@ export function MockTests() {
 
                   <Button
                     onClick={handleGenerateTest}
-                    disabled={!selectedMaterial || !selectedExam || selectedTopics.length === 0 || generatingQuestions}
+                    disabled={selectedMaterials.length === 0 || !selectedExam || selectedTopics.length === 0 || generatingQuestions}
                     className="w-full bg-gradient-to-r from-amber-400 via-orange-500 to-red-500 hover:from-amber-500 hover:via-orange-600 hover:to-red-600 text-white border-2 border-black rounded-lg shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] disabled:opacity-50 font-bold"
                   >
                     {generatingQuestions ? (
@@ -934,144 +1309,6 @@ export function MockTests() {
           </div>
         </div>
       </motion.div>
-
-      {/* Saved Tests Section */}
-      {savedTests.length > 0 && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-        >
-          <Card className="rounded-2xl bg-white dark:bg-black/40 border-2 border-gray-200 dark:border-slate-800/50 shadow-md">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="text-gray-900 dark:text-white flex items-center gap-2">
-                    <FileText className="h-5 w-5 text-black dark:text-white" />
-                    Recent Tests
-                  </CardTitle>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Click on any test to start</p>
-                </div>
-                {/* Sync Status Indicator */}
-                <div className="flex items-center gap-2">
-                  {syncStatus === 'synced' && (
-                    <div className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-emerald-400/20 to-teal-500/20 dark:from-emerald-500/30 dark:to-teal-600/30 border border-emerald-300 dark:border-emerald-700 rounded-full">
-                      <div className="w-2 h-2 bg-gradient-to-r from-emerald-400 to-teal-500 rounded-full animate-pulse"></div>
-                      <span className="text-xs font-medium text-green-700 dark:text-green-400">Synced</span>
-                    </div>
-                  )}
-                  {syncStatus === 'syncing' && (
-                    <div className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-full">
-                      <Loader2 className="w-3 h-3 text-blue-600 dark:text-blue-400 animate-spin" />
-                      <span className="text-xs font-medium text-blue-700 dark:text-blue-400">Syncing...</span>
-                    </div>
-                  )}
-                  {syncStatus === 'offline' && (
-                    <div className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-full">
-                      <div className="w-2 h-2 bg-amber-500 rounded-full"></div>
-                      <span className="text-xs font-medium text-amber-700 dark:text-amber-400">Offline</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {savedTests.map((test) => (
-                  <motion.div
-                    key={test.id}
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    whileHover={{ scale: 1.02 }}
-                    className="relative group cursor-pointer"
-                    onClick={() => loadSavedTest(test)}
-                  >
-                    <div className="absolute -inset-0.5 bg-gradient-to-r from-[#86EFAC] to-[#6EE7B7] rounded-xl opacity-0 group-hover:opacity-100 blur transition duration-300"></div>
-                    <div className="relative p-4 bg-white dark:bg-slate-900 rounded-xl border-[3px] border-black dark:border-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] group-hover:translate-x-1 group-hover:translate-y-1 group-hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:group-hover:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)] transition-all">
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="flex-1">
-                          <h3 className="font-bold text-gray-900 dark:text-white text-sm line-clamp-2 mb-1">
-                            {test.name}
-                          </h3>
-                          <p className="text-xs text-gray-600 dark:text-gray-400">
-                            {new Date(test.created_at).toLocaleDateString('en-US', {
-                              month: 'short',
-                              day: 'numeric',
-                              year: 'numeric'
-                            })}
-                          </p>
-                        </div>
-                        <button
-                          onClick={(e) => handleDeleteClick(test.id, e)}
-                          className="p-1.5 rounded-md text-red-500 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-950/30 transition-colors"
-                          title="Delete test"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <div className="flex items-center gap-2 text-xs">
-                          <div className="flex items-center gap-1 px-2 py-1 bg-gradient-to-r from-violet-400 to-purple-500 text-white rounded-md font-semibold shadow-lg">
-                            <Brain className="h-3 w-3" />
-                            {test.exam_type}
-                          </div>
-                          <div className="flex items-center gap-1 px-2 py-1 bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-gray-300 rounded-md font-medium">
-                            {test.questions.length} Qs
-                          </div>
-                        </div>
-                        
-                        <div className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
-                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                          </svg>
-                          <span className="font-medium">{test.duration} mins</span>
-                        </div>
-                        
-                        <div className="pt-2 border-t border-gray-200 dark:border-slate-700">
-                          <p className="text-xs text-gray-500 dark:text-gray-400 italic line-clamp-1">
-                            Topic: {test.topic}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-      )}
-
-      {/* Delete Confirmation Dialog */}
-      <AlertDialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
-        <AlertDialogContent className="bg-white dark:bg-slate-900 border-2 border-gray-200 dark:border-slate-800">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
-              <Trash2 className="h-5 w-5 text-red-500" />
-              Delete Test?
-            </AlertDialogTitle>
-            <AlertDialogDescription className="text-gray-600 dark:text-gray-400">
-              {testToDelete && (
-                <>
-                  This will permanently delete the test <span className="font-semibold text-gray-900 dark:text-white">"{savedTests.find(t => t.id === testToDelete)?.name}"</span> and all <span className="font-semibold text-gray-900 dark:text-white">{savedTests.find(t => t.id === testToDelete)?.questions.length || 0} questions</span> from both your local storage and database.
-                </>
-              )}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel className="border-2 border-gray-300 dark:border-slate-700">
-              Cancel
-            </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={confirmDelete}
-              className="bg-red-500 hover:bg-red-600 text-white border-2 border-red-600"
-            >
-              Delete Test
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
 
     </div>
   );
