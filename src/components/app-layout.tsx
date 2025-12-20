@@ -32,7 +32,9 @@ import {
   Sparkles,
   Upload,
   Award,
-  UserCircle
+  UserCircle,
+  History,
+  Zap
 } from 'lucide-react';
 
 interface AppLayoutProps {
@@ -79,9 +81,14 @@ export function AppLayout({ children, hideSidebar = false }: AppLayoutProps) {
       icon: <Upload className="h-5 w-5" />,
     },
     {
-      label: "My Tests",
+      label: "Generate Test",
       href: "/dashboard/tests",
-      icon: <Brain className="h-5 w-5" />,
+      icon: <Zap className="h-5 w-5" />,
+    },
+    {
+      label: "Test History",
+      href: "/dashboard/test-history",
+      icon: <History className="h-5 w-5" />,
     },
     {
       label: "Progress & Analytics",
