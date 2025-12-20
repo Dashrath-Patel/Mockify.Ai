@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from 'react';
 import { motion } from 'motion/react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
@@ -7,6 +8,7 @@ import { Badge } from './ui/badge';
 import { Progress } from './ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { ScrollArea } from './ui/scroll-area';
+import { AITutorChat } from './AITutorChat';
 import { 
   Trophy, 
   Clock, 
@@ -18,7 +20,8 @@ import {
   BarChart3,
   Home,
   RotateCcw,
-  Download
+  Download,
+  Sparkles
 } from 'lucide-react';
 
 interface Question {
@@ -97,6 +100,29 @@ export function TestResultsScreen({
   };
 
   const results = calculateResults();
+
+  // AI Tutor state
+  const [tutorOpen, setTutorOpen] = useState(false);
+  const [selectedQuestion, setSelectedQuestion] = useState<{
+    questionText: string;
+    options: string[];
+    correctAnswer: string;
+    userAnswer: string;
+    topic: string;
+    questionIndex: number;
+  } | null>(null);
+
+  const openAITutor = (q: Question, index: number) => {
+    setSelectedQuestion({
+      questionText: q.question,
+      options: q.options,
+      correctAnswer: q.correctAnswer,
+      userAnswer: userAnswers[index] || 'Not answered',
+      topic: q.topic,
+      questionIndex: index
+    });
+    setTutorOpen(true);
+  };
 
   // Format time
   const formatTime = (seconds: number) => {
@@ -454,6 +480,19 @@ export function TestResultsScreen({
                                   <p className="text-sm text-blue-800 dark:text-blue-300">{q.explanation}</p>
                                 </div>
                               )}
+
+                              {/* Ask AI Tutor Button */}
+                              <div className="mt-4 flex justify-end">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => openAITutor(q, index)}
+                                  className="flex items-center gap-2 hover:bg-purple-50 dark:hover:bg-purple-950/20 border-purple-300 dark:border-purple-700"
+                                >
+                                  <Sparkles className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                                  Ask AI Tutor
+                                </Button>
+                              </div>
                             </motion.div>
                           );
                         })}
@@ -465,6 +504,20 @@ export function TestResultsScreen({
             </CardContent>
           </Card>
         </motion.div>
+
+        {/* AI Tutor Chat Dialog */}
+        {selectedQuestion && (
+          <AITutorChat
+            open={tutorOpen}
+            onOpenChange={setTutorOpen}
+            questionText={selectedQuestion.questionText}
+            options={selectedQuestion.options}
+            correctAnswer={selectedQuestion.correctAnswer}
+            userAnswer={selectedQuestion.userAnswer}
+            topic={selectedQuestion.topic}
+            questionIndex={selectedQuestion.questionIndex}
+          />
+        )}
       </div>
     </div>
   );
