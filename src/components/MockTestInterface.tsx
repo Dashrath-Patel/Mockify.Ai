@@ -20,7 +20,8 @@ import {
   SkipForward,
   Maximize2,
   Volume2,
-  Eye
+  Eye,
+  AlertCircle
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -39,6 +40,7 @@ interface MockTestInterfaceProps {
   questions: Question[];
   testTitle: string;
   duration: number; // in minutes
+  negativeMarking?: number; // negative marks per wrong answer
   onSubmitTest: (answers: Record<number, string>, timeSpent: number) => void;
   onExitTest: () => void;
 }
@@ -47,6 +49,7 @@ export function MockTestInterface({
   questions,
   testTitle,
   duration,
+  negativeMarking = 0.66,
   onSubmitTest,
   onExitTest
 }: MockTestInterfaceProps) {
@@ -85,6 +88,11 @@ export function MockTestInterface({
 
     document.addEventListener('fullscreenchange', handleFullscreenChange);
     return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, []);
+
+  // Scroll to top when test starts
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' });
   }, []);
 
   // Initialize question status
@@ -167,6 +175,19 @@ export function MockTestInterface({
       } else {
         setQuestionStatus(prev => ({ ...prev, [currentQuestion]: 'answered' }));
       }
+      
+      // If this is the last question, check if all are complete
+      if (currentQuestion === questions.length - 1) {
+        // Schedule check for after state update
+        setTimeout(() => checkAndAutoSubmit(), 100);
+        return;
+      }
+    } else {
+      toast.warning('Please select an answer before proceeding.', {
+        icon: <AlertCircle className="h-5 w-5 text-amber-500" />,
+        duration: 2000,
+      });
+      return;
     }
     
     // Move to next question
@@ -190,6 +211,10 @@ export function MockTestInterface({
     } else {
       setQuestionStatus(prev => ({ ...prev, [currentQuestion]: 'not-answered' }));
     }
+    
+    toast.info('Response cleared. Remember to select an answer before submitting.', {
+      duration: 2000,
+    });
   };
 
   // Mark for review and next
@@ -197,8 +222,14 @@ export function MockTestInterface({
     if (selectedAnswer) {
       setAnswers(prev => ({ ...prev, [currentQuestion]: selectedAnswer }));
       setQuestionStatus(prev => ({ ...prev, [currentQuestion]: 'answered-marked' }));
+      toast.info('Question saved and marked for review.', { duration: 1500 });
     } else {
+      // Still allow marking without answer, but warn user
       setQuestionStatus(prev => ({ ...prev, [currentQuestion]: 'marked-review' }));
+      toast.warning('Question marked for review. Remember to answer it before submitting!', { 
+        duration: 2500,
+        icon: <Flag className="h-5 w-5 text-purple-500" />,
+      });
     }
     
     // Move to next question
@@ -212,6 +243,72 @@ export function MockTestInterface({
     const timeSpent = (duration * 60 - timeLeft);
     onSubmitTest(answers, timeSpent);
     setShowSubmitDialog(false);
+  };
+
+  // Find first unanswered or marked question
+  const findFirstIncompleteQuestion = (): { index: number; type: 'unanswered' | 'marked' | null } => {
+    // First check for unanswered questions (not-visited, not-answered)
+    for (let i = 0; i < questions.length; i++) {
+      const status = questionStatus[i];
+      if (status === 'not-visited' || status === 'not-answered') {
+        return { index: i, type: 'unanswered' };
+      }
+    }
+    
+    // Then check for marked questions without answers
+    for (let i = 0; i < questions.length; i++) {
+      const status = questionStatus[i];
+      if (status === 'marked-review') {
+        return { index: i, type: 'marked' };
+      }
+    }
+    
+    return { index: -1, type: null };
+  };
+
+  // Validate before opening submit dialog
+  const handleSubmitClick = () => {
+    const incomplete = findFirstIncompleteQuestion();
+    
+    if (incomplete.type === 'unanswered') {
+      toast.error(
+        `You have ${statusCounts.notAnswered + statusCounts.notVisited} unanswered question(s). Please answer all questions before submitting.`,
+        {
+          icon: <AlertCircle className="h-5 w-5 text-red-500" />,
+          duration: 4000,
+        }
+      );
+      goToQuestion(incomplete.index);
+      return;
+    }
+    
+    if (incomplete.type === 'marked') {
+      toast.warning(
+        `You have ${statusCounts.markedForReview} question(s) marked for review. Please review them before submitting.`,
+        {
+          icon: <Flag className="h-5 w-5 text-purple-500" />,
+          duration: 4000,
+        }
+      );
+      goToQuestion(incomplete.index);
+      return;
+    }
+    
+    // All questions answered and not marked - show submit dialog
+    setShowSubmitDialog(true);
+  };
+
+  // Check if all questions are complete and auto-open submit dialog
+  const checkAndAutoSubmit = () => {
+    const incomplete = findFirstIncompleteQuestion();
+    if (incomplete.type === null && currentQuestion === questions.length - 1) {
+      // All questions answered, show submit dialog
+      toast.success('All questions answered! You can now submit your test.', {
+        icon: <CheckCircle2 className="h-5 w-5 text-green-500" />,
+        duration: 3000,
+      });
+      setShowSubmitDialog(true);
+    }
   };
 
   // Get status counts
@@ -325,7 +422,7 @@ export function MockTestInterface({
                   <span>Marks</span>
                 </span>
                 <span className="flex items-center gap-1">
-                  <span className="font-semibold text-[#EF4444]">-0.66</span>
+                  <span className="font-semibold text-[#EF4444]">-{negativeMarking}</span>
                   <span>Negative</span>
                 </span>
               </div>
@@ -502,7 +599,7 @@ export function MockTestInterface({
 
               {/* Submit Button */}
               <Button
-                onClick={() => setShowSubmitDialog(true)}
+                onClick={handleSubmitClick}
                 className="w-full bg-gradient-to-r from-emerald-400 to-teal-500 hover:from-emerald-500 hover:to-teal-600 text-white border-2 border-black font-semibold py-6 text-lg shadow-lg"
               >
                 Submit Test
