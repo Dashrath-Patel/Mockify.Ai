@@ -18,9 +18,10 @@ const EMBEDDING_MODEL = 'sentence-transformers/all-mpnet-base-v2';
  * Generate embedding vector for text using HuggingFace API with retry logic
  * @param text - Text to embed (max ~512 tokens recommended)
  * @param retries - Number of retry attempts (default: 3)
+ * @param silent - Suppress logs for batch processing (default: false)
  * @returns 768-dimensional embedding vector
  */
-export async function generateEmbedding(text: string, retries: number = 3): Promise<number[]> {
+export async function generateEmbedding(text: string, retries: number = 3, silent: boolean = false): Promise<number[]> {
   if (!text || text.trim().length === 0) {
     throw new Error('Text cannot be empty');
   }
@@ -28,7 +29,9 @@ export async function generateEmbedding(text: string, retries: number = 3): Prom
   // Model has 512 token limit (~2000 chars, but can handle up to 8000 with truncation)
   const truncatedText = text.slice(0, 8000);
   
-  console.log(`Generating embedding via HuggingFace API (${truncatedText.length} chars)...`);
+  if (!silent) {
+    console.log(`Generating embedding via HuggingFace API (${truncatedText.length} chars)...`);
+  }
   
   let lastError: Error | null = null;
   
@@ -42,7 +45,9 @@ export async function generateEmbedding(text: string, retries: number = 3): Prom
       // Convert to number array (handle both array and nested array responses)
       const embeddingArray = Array.isArray(embedding[0]) ? embedding[0] : embedding;
       
-      console.log(`✓ Embedding generated (${embeddingArray.length} dimensions, expected: 768)`);
+      if (!silent) {
+        console.log(`✓ Embedding generated (${embeddingArray.length} dimensions, expected: 768)`);
+      }
       
       return embeddingArray as number[];
     } catch (error: any) {
@@ -74,47 +79,52 @@ export async function generateEmbedding(text: string, retries: number = 3): Prom
 }
 
 /**
- * Generate embeddings for multiple texts in batch with rate limiting
- * Processes chunks sequentially with delays to avoid overwhelming the API
+ * Generate embeddings for multiple texts in batch with parallel processing
+ * Uses concurrent requests for speed, with smart batching to avoid rate limits
  */
 export async function generateEmbeddings(texts: string[]): Promise<number[][]> {
   if (!texts || texts.length === 0) {
     throw new Error('Texts array cannot be empty');
   }
 
-  console.log(`Generating ${texts.length} embeddings via HuggingFace API...`);
+  console.log(`🚀 Generating ${texts.length} embeddings in parallel batches...`);
 
   const embeddings: number[][] = [];
-  const batchSize = 5; // Process 5 at a time
-  const delayBetweenBatches = 1000; // 1 second delay between batches
+  const batchSize = 10; // Process 10 at a time (HuggingFace can handle this)
+  const delayBetweenBatches = 200; // Only 200ms delay between batches
+
+  const startTime = Date.now();
 
   for (let i = 0; i < texts.length; i += batchSize) {
     const batch = texts.slice(i, i + batchSize);
-    console.log(`Processing batch ${Math.floor(i / batchSize) + 1}/${Math.ceil(texts.length / batchSize)} (${batch.length} items)...`);
+    const batchNum = Math.floor(i / batchSize) + 1;
+    const totalBatches = Math.ceil(texts.length / batchSize);
     
     try {
-      // Process batch in parallel
+      // Process batch in parallel with silent mode (no individual logs)
       const batchEmbeddings = await Promise.all(
-        batch.map(text => generateEmbedding(text))
+        batch.map(text => generateEmbedding(text, 2, true)) // Silent mode for batch
       );
       
       embeddings.push(...batchEmbeddings);
-      console.log(`✓ Batch complete (${embeddings.length}/${texts.length} total)`);
       
-      // Delay between batches to avoid rate limiting (except for last batch)
+      const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+      console.log(`✓ Batch ${batchNum}/${totalBatches} complete (${embeddings.length}/${texts.length} in ${elapsed}s)`);
+      
+      // Short delay between batches (except for last batch)
       if (i + batchSize < texts.length) {
-        console.log(`   Waiting ${delayBetweenBatches}ms before next batch...`);
         await new Promise(resolve => setTimeout(resolve, delayBetweenBatches));
       }
     } catch (error) {
-      console.error(`❌ Batch ${Math.floor(i / batchSize) + 1} failed:`, error);
+      console.error(`❌ Batch ${batchNum} failed:`, error);
       throw new Error(
-        `Failed at batch ${Math.floor(i / batchSize) + 1}: ${error instanceof Error ? error.message : 'Unknown error'}`
+        `Failed at batch ${batchNum}: ${error instanceof Error ? error.message : 'Unknown error'}`
       );
     }
   }
 
-  console.log(`✅ Generated all ${embeddings.length} embeddings successfully`);
+  const totalTime = ((Date.now() - startTime) / 1000).toFixed(1);
+  console.log(`✅ Generated all ${embeddings.length} embeddings in ${totalTime}s`);
   return embeddings;
 }
 
