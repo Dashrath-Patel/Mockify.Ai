@@ -216,7 +216,11 @@ OUTPUT FORMAT (JSON array only, no markdown or extra text):
   }
 ]
 
-CRITICAL: Return ONLY valid JSON array. No markdown code blocks, no explanatory text, just the array.`;
+CRITICAL REQUIREMENTS:
+1. You MUST generate EXACTLY ${request.questionCount} questions - no more, no less
+2. Return ONLY valid JSON array. No markdown code blocks, no explanatory text, just the array
+3. If study material is limited, use your expert knowledge of ${request.examType} exam patterns to generate topic-relevant questions
+4. Each question must be complete and well-formed`;
 
     // Retry logic with exponential backoff and model fallback
     let response;
@@ -426,16 +430,21 @@ CRITICAL: Return ONLY valid JSON array. No markdown code blocks, no explanatory 
 // Enhanced fallback questions based on exam type and content
 function generateFallbackQuestions(request: QuestionGenerationRequest): GeneratedQuestion[] {
   const examTypeQuestions = getExamTypeQuestions(request.examType, request.difficulty);
-  const contentBasedQuestions = generateContentBasedQuestions(request.content, request.difficulty);
+  // Pass the requested questionCount to generate enough fallback questions
+  const contentBasedQuestions = generateContentBasedQuestions(request.content, request.difficulty, request.questionCount);
   
-  // Combine and shuffle questions
-  const allQuestions = [...examTypeQuestions, ...contentBasedQuestions];
+  // Combine and shuffle questions, prioritizing content-based questions
+  const allQuestions = [...contentBasedQuestions, ...examTypeQuestions];
   const shuffled = allQuestions.sort(() => Math.random() - 0.5);
   
-  return shuffled.slice(0, request.questionCount).map((q, index) => ({
+  // Ensure we return at least the requested number of questions
+  const result = shuffled.slice(0, request.questionCount).map((q, index) => ({
     ...q,
     difficulty: request.difficulty
   }));
+  
+  console.log(`📋 Fallback generated ${result.length}/${request.questionCount} questions`);
+  return result;
 }
 
 function getExamTypeQuestions(examType: string, difficulty: string): GeneratedQuestion[] {
@@ -511,6 +520,138 @@ function getExamTypeQuestions(examType: string, difficulty: string): GeneratedQu
         explanation: "Article 21A provides free and compulsory education to children aged 6-14 years."
       }
     ],
+    NEET: [
+      {
+        question: "Which part of the flower develops into a fruit?",
+        options: [
+          "A) Ovary",
+          "B) Anther",
+          "C) Stigma",
+          "D) Filament"
+        ],
+        correctAnswer: "A",
+        topic: "Morphology of Flowering Plants",
+        difficulty: difficulty as any,
+        explanation: "After fertilization, the ovary develops into the fruit while the ovules develop into seeds."
+      },
+      {
+        question: "The first law of thermodynamics is a statement of:",
+        options: [
+          "A) Conservation of energy",
+          "B) Conservation of mass",
+          "C) Conservation of momentum",
+          "D) Conservation of entropy"
+        ],
+        correctAnswer: "A",
+        topic: "Chemical Thermodynamics",
+        difficulty: difficulty as any,
+        explanation: "The first law of thermodynamics states that energy cannot be created or destroyed, only transferred or converted."
+      },
+      {
+        question: "Xylem is responsible for:",
+        options: [
+          "A) Transport of water and minerals",
+          "B) Transport of food",
+          "C) Photosynthesis",
+          "D) Respiration"
+        ],
+        correctAnswer: "A",
+        topic: "Morphology of Flowering Plants",
+        difficulty: difficulty as any,
+        explanation: "Xylem is a vascular tissue that transports water and dissolved minerals from roots to other parts of the plant."
+      },
+      {
+        question: "Enthalpy change (ΔH) at constant pressure is equal to:",
+        options: [
+          "A) Heat absorbed or evolved",
+          "B) Work done",
+          "C) Internal energy change",
+          "D) Free energy change"
+        ],
+        correctAnswer: "A",
+        topic: "Chemical Thermodynamics",
+        difficulty: difficulty as any,
+        explanation: "At constant pressure, the enthalpy change equals the heat absorbed or evolved by the system."
+      },
+      {
+        question: "Which type of inflorescence is found in sunflower?",
+        options: [
+          "A) Capitulum",
+          "B) Raceme",
+          "C) Corymb",
+          "D) Umbel"
+        ],
+        correctAnswer: "A",
+        topic: "Morphology of Flowering Plants",
+        difficulty: difficulty as any,
+        explanation: "Sunflower has a capitulum (head) inflorescence where florets are arranged on a flat receptacle."
+      },
+      {
+        question: "Standard enthalpy of formation of an element in its standard state is:",
+        options: [
+          "A) Zero",
+          "B) Positive",
+          "C) Negative",
+          "D) Infinite"
+        ],
+        correctAnswer: "A",
+        topic: "Chemical Thermodynamics",
+        difficulty: difficulty as any,
+        explanation: "By convention, the standard enthalpy of formation of an element in its most stable form is taken as zero."
+      },
+      {
+        question: "Phyllotaxy refers to the arrangement of:",
+        options: [
+          "A) Leaves on the stem",
+          "B) Flowers in an inflorescence",
+          "C) Ovules in an ovary",
+          "D) Stamens around the pistil"
+        ],
+        correctAnswer: "A",
+        topic: "Morphology of Flowering Plants",
+        difficulty: difficulty as any,
+        explanation: "Phyllotaxy is the pattern or arrangement of leaves on a stem or branch."
+      },
+      {
+        question: "Which process has a positive entropy change?",
+        options: [
+          "A) Melting of ice",
+          "B) Freezing of water",
+          "C) Condensation of steam",
+          "D) Crystallization of salt"
+        ],
+        correctAnswer: "A",
+        topic: "Chemical Thermodynamics",
+        difficulty: difficulty as any,
+        explanation: "Melting increases disorder (randomness), so entropy increases and ΔS is positive."
+      },
+      {
+        question: "Tap root system is found in:",
+        options: [
+          "A) Dicots",
+          "B) Monocots",
+          "C) Ferns",
+          "D) Mosses"
+        ],
+        correctAnswer: "A",
+        topic: "Morphology of Flowering Plants",
+        difficulty: difficulty as any,
+        explanation: "Dicots typically have a tap root system with a main root and lateral branches."
+      },
+      {
+        question: "Gibbs free energy (G) is given by:",
+        options: [
+          "A) G = H - TS",
+          "B) G = H + TS",
+          "C) G = U - TS",
+          "D) G = U + PV"
+        ],
+        correctAnswer: "A",
+        topic: "Chemical Thermodynamics",
+        difficulty: difficulty as any,
+        explanation: "Gibbs free energy is defined as G = H - TS, where H is enthalpy, T is temperature, and S is entropy."
+      }
+    ],
     General: [
       {
         question: "Based on the study material provided, what is the main theme discussed?",
@@ -531,14 +672,14 @@ function getExamTypeQuestions(examType: string, difficulty: string): GeneratedQu
   return questionBank[examType] || questionBank.General;
 }
 
-function generateContentBasedQuestions(content: string, difficulty: string): GeneratedQuestion[] {
-  if (!content || content.length < 100) {
+function generateContentBasedQuestions(content: string, difficulty: string, questionCount: number = 10): GeneratedQuestion[] {
+  if (!content || content.length < 50) {
     return [];
   }
 
   // Extract key terms and concepts
   const words = content.toLowerCase().split(/\s+/);
-  const commonWords = new Set(['the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by', 'is', 'are', 'was', 'were', 'be', 'been', 'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could', 'should']);
+  const commonWords = new Set(['the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by', 'is', 'are', 'was', 'were', 'be', 'been', 'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could', 'should', 'this', 'that', 'these', 'those', 'which', 'who', 'what', 'when', 'where', 'how', 'why']);
   
   const keyTerms = words
     .filter(word => word.length > 4 && !commonWords.has(word))
@@ -549,50 +690,148 @@ function generateContentBasedQuestions(content: string, difficulty: string): Gen
 
   const topTerms = Object.entries(keyTerms)
     .sort(([,a], [,b]) => b - a)
-    .slice(0, 5)
+    .slice(0, 10)
     .map(([term]) => term);
 
-  const contentQuestions: GeneratedQuestion[] = [
+  // Ensure we have at least 4 distinct terms for options
+  while (topTerms.length < 4) {
+    topTerms.push(['concept', 'principle', 'method', 'system', 'theory', 'application', 'process', 'analysis'][topTerms.length]);
+  }
+
+  // Generate more questions to meet the requested count
+  const contentQuestions: GeneratedQuestion[] = [];
+
+  // Question templates that can be used to generate variety
+  const questionTemplates = [
     {
-      question: `According to the content, which term appears most frequently in the context of the main discussion?`,
+      question: `Which concept is central to understanding the main discussion in the study material?`,
       options: [
-        `A) ${topTerms[0] || 'concept'}`,
-        `B) ${topTerms[1] || 'principle'}`,
-        `C) ${topTerms[2] || 'method'}`,
-        `D) ${topTerms[3] || 'system'}`
+        `A) ${topTerms[0]}`,
+        `B) ${topTerms[1]}`,
+        `C) ${topTerms[2]}`,
+        `D) ${topTerms[3]}`
       ],
       correctAnswer: "A",
-      topic: "Content Analysis",
-      difficulty: difficulty as any,
-      explanation: `The term '${topTerms[0] || 'concept'}' appears most frequently, indicating its central importance to the topic.`
+      topic: "Core Concepts",
+      explanation: `The concept of '${topTerms[0]}' is central to understanding the material.`
     },
     {
-      question: "What is the primary objective discussed in the study material?",
+      question: "What is the primary focus of the study material?",
       options: [
-        "A) To explain fundamental principles",
-        "B) To provide historical context",
-        "C) To demonstrate practical applications",
-        "D) To compare different methodologies"
+        "A) Explaining fundamental principles and concepts",
+        "B) Providing historical background only",
+        "C) Listing facts without explanation",
+        "D) Comparing unrelated topics"
       ],
       correctAnswer: "A",
-      topic: "Main Concepts", 
-      difficulty: difficulty as any,
+      topic: "Main Concepts",
       explanation: "The material primarily focuses on explaining fundamental principles as evidenced by the content structure."
     },
     {
-      question: "Based on the content structure, what type of learning approach is emphasized?",
+      question: "Which learning approach is most aligned with the content structure?",
       options: [
-        "A) Theoretical understanding",
-        "B) Practical implementation", 
-        "C) Comparative analysis",
-        "D) Historical perspective"
+        "A) Conceptual understanding and application",
+        "B) Rote memorization",
+        "C) Random fact collection",
+        "D) Unstructured learning"
       ],
       correctAnswer: "A",
       topic: "Learning Methodology",
-      difficulty: difficulty as any,
-      explanation: "The content structure indicates emphasis on theoretical understanding through detailed explanations."
+      explanation: "The content structure emphasizes conceptual understanding and practical application."
+    },
+    {
+      question: "What type of questions does this examination typically test?",
+      options: [
+        "A) Understanding and application of concepts",
+        "B) Simple recall only",
+        "C) Opinion-based answers",
+        "D) Subjective interpretations"
+      ],
+      correctAnswer: "A",
+      topic: "Exam Pattern",
+      explanation: "Competitive exams typically test understanding and application rather than simple recall."
+    },
+    {
+      question: "Which skill is most important for answering questions from this material?",
+      options: [
+        "A) Critical thinking and concept application",
+        "B) Speed reading only",
+        "C) Memorizing exact words",
+        "D) Guessing techniques"
+      ],
+      correctAnswer: "A",
+      topic: "Study Skills",
+      explanation: "Critical thinking and the ability to apply concepts is essential for exam success."
+    },
+    {
+      question: "What distinguishes high-quality answers in this subject area?",
+      options: [
+        "A) Clear understanding and precise application",
+        "B) Lengthy responses without substance",
+        "C) Copying exact text from material",
+        "D) Avoiding technical terminology"
+      ],
+      correctAnswer: "A",
+      topic: "Answer Techniques",
+      explanation: "High-quality answers demonstrate clear understanding and precise application of concepts."
+    },
+    {
+      question: "How should concepts from this material be approached during revision?",
+      options: [
+        "A) Understand principles and practice applications",
+        "B) Read once and forget",
+        "C) Focus only on easy parts",
+        "D) Skip the difficult sections"
+      ],
+      correctAnswer: "A",
+      topic: "Study Strategy",
+      explanation: "Effective revision involves understanding principles thoroughly and practicing their applications."
+    },
+    {
+      question: "What is the relationship between theory and practice in this subject?",
+      options: [
+        "A) Theory provides foundation for practical applications",
+        "B) Theory is unrelated to practice",
+        "C) Practice replaces the need for theory",
+        "D) Neither is important for exams"
+      ],
+      correctAnswer: "A",
+      topic: "Subject Understanding",
+      explanation: "Theory provides the essential foundation that enables practical applications."
+    },
+    {
+      question: "Which approach is best for mastering difficult concepts in this material?",
+      options: [
+        "A) Break down into smaller parts and understand each",
+        "B) Skip difficult concepts entirely",
+        "C) Memorize without understanding",
+        "D) Wait until the last moment to study"
+      ],
+      correctAnswer: "A",
+      topic: "Learning Technique",
+      explanation: "Breaking complex concepts into smaller parts makes them easier to understand and remember."
+    },
+    {
+      question: "What should students prioritize when preparing for this exam?",
+      options: [
+        "A) Understanding core concepts and their applications",
+        "B) Memorizing question patterns only",
+        "C) Studying only easy topics",
+        "D) Focusing on quantity over quality"
+      ],
+      correctAnswer: "A",
+      topic: "Exam Preparation",
+      explanation: "Understanding core concepts and their applications is key to exam success."
     }
   ];
+
+  // Add questions up to the requested count
+  for (let i = 0; i < Math.min(questionCount, questionTemplates.length); i++) {
+    contentQuestions.push({
+      ...questionTemplates[i],
+      difficulty: difficulty as any
+    });
+  }
 
   return contentQuestions;
 }
