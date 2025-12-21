@@ -86,7 +86,7 @@ export function AppLayout({ children, hideSidebar = false }: AppLayoutProps) {
       icon: <Zap className="h-5 w-5" />,
     },
     {
-      label: "Test History",
+      label: "Test Warehouse",
       href: "/dashboard/test-history",
       icon: <History className="h-5 w-5" />,
     },
