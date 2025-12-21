@@ -138,7 +138,7 @@ export function TestInstructionsScreen({
                     className="border-gray-300 data-[state=checked]:bg-[#030213] data-[state=checked]:border-[#030213]"
                   />
                   <span className="text-sm text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-gray-200 transition-colors">
-                    I'm ready to start this test
+                    I&apos;m ready to start this test
                   </span>
                 </label>
 

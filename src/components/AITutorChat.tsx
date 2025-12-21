@@ -343,7 +343,7 @@ export function AITutorChat({
                 Ask your doubt
               </h3>
               <p className="text-sm text-muted-foreground mb-4">
-                I'll explain the concept clearly
+                I&apos;ll explain the concept clearly
               </p>
               
               {/* Quick Suggestions */}

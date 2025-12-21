@@ -1060,7 +1060,7 @@ export function MockTests() {
                     
                     {/* Syllabus Selection - Middle (Always visible) */}
                     <div className="space-y-2">
-                      <label className="text-sm text-gray-700 dark:text-gray-300 font-semibold flex items-center gap-2">
+                      <label htmlFor="syllabus-select" className="text-sm text-gray-700 dark:text-gray-300 font-semibold flex items-center gap-2">
                         📋 Select Syllabus (Optional)
                       </label>
                       <Select value={selectedSyllabus} onValueChange={setSelectedSyllabus} disabled={loading}>
@@ -1104,8 +1104,9 @@ export function MockTests() {
                     </div>
 
                     <div className="space-y-2">
-                      <label className="text-sm text-gray-700 dark:text-gray-300 font-semibold">Exam Type</label>
+                      <label htmlFor="exam-type-input" className="text-sm text-gray-700 dark:text-gray-300 font-semibold">Exam Type</label>
                       <Input
+                        id="exam-type-input"
                         placeholder="Type exam (e.g., NEET, JEE, UPSC)..."
                         value={selectedExam}
                         onChange={(e) => setSelectedExam(e.target.value)}
@@ -1193,10 +1194,11 @@ export function MockTests() {
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-sm text-gray-700 dark:text-gray-300 font-semibold">
+                    <label htmlFor="test-name-input" className="text-sm text-gray-700 dark:text-gray-300 font-semibold">
                       Test Name <span className="text-xs font-normal text-gray-500">(Optional)</span>
                     </label>
                     <Input
+                      id="test-name-input"
                       placeholder="e.g., Biology Chapter 1-3 Test, Physics Mechanics Mock"
                       value={testName}
                       onChange={(e) => setTestName(e.target.value)}
@@ -1212,8 +1214,9 @@ export function MockTests() {
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <label className="text-sm text-gray-700 dark:text-gray-300 font-semibold">Number of Questions</label>
+                      <label htmlFor="question-count-input" className="text-sm text-gray-700 dark:text-gray-300 font-semibold">Number of Questions</label>
                       <Input
+                        id="question-count-input"
                         type="text"
                         value={questionInput}
                         onChange={(e) => {
@@ -1243,8 +1246,9 @@ export function MockTests() {
                     </div>
                     
                     <div className="space-y-2">
-                      <label className="text-sm text-gray-700 dark:text-gray-300 font-semibold">Test Duration (minutes)</label>
+                      <label htmlFor="duration-input" className="text-sm text-gray-700 dark:text-gray-300 font-semibold">Test Duration (minutes)</label>
                       <Input
+                        id="duration-input"
                         type="text"
                         value={durationInput}
                         onChange={(e) => {
@@ -1274,8 +1278,9 @@ export function MockTests() {
                     </div>
                     
                     <div className="space-y-2">
-                      <label className="text-sm text-gray-700 dark:text-gray-300 font-semibold">Negative Marking (per wrong answer)</label>
+                      <label htmlFor="negative-marking-input" className="text-sm text-gray-700 dark:text-gray-300 font-semibold">Negative Marking (per wrong answer)</label>
                       <Input
+                        id="negative-marking-input"
                         type="text"
                         value={negativeMarkingInput}
                         onChange={(e) => {

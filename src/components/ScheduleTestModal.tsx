@@ -95,11 +95,12 @@ export function ScheduleTestModal({ testId, testTitle, onClose, onScheduled }: S
 
           {/* Date Picker */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="schedule-date" className="block text-sm font-medium text-gray-700 mb-2">
               <Calendar className="w-4 h-4 inline mr-2" />
               Select Date
             </label>
             <input
+              id="schedule-date"
               type="date"
               value={scheduledDate}
               onChange={(e) => setScheduledDate(e.target.value)}
@@ -110,11 +111,12 @@ export function ScheduleTestModal({ testId, testTitle, onClose, onScheduled }: S
 
           {/* Time Picker */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="schedule-time" className="block text-sm font-medium text-gray-700 mb-2">
               <Clock className="w-4 h-4 inline mr-2" />
               Select Time
             </label>
             <input
+              id="schedule-time"
               type="time"
               value={scheduledTime}
               onChange={(e) => setScheduledTime(e.target.value)}
@@ -152,10 +154,11 @@ export function ScheduleTestModal({ testId, testTitle, onClose, onScheduled }: S
 
           {/* Notes */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="schedule-notes" className="block text-sm font-medium text-gray-700 mb-2">
               Notes (Optional)
             </label>
             <textarea
+              id="schedule-notes"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Add preparation notes..."
