@@ -80,7 +80,8 @@ export async function POST(request: NextRequest) {
     const correctCount = Object.entries(answers).filter(([questionId, userAnswer]) => {
       const correctAnswer = correctAnswers[questionId];
       // Extract just the letter from user's answer (e.g., "A) Some text" -> "A")
-      const userAnswerLetter = userAnswer?.trim().charAt(0).toUpperCase();
+      const userAnswerStr = String(userAnswer || '');
+      const userAnswerLetter = userAnswerStr.trim().charAt(0).toUpperCase();
       const correctAnswerLetter = correctAnswer?.trim().charAt(0).toUpperCase();
       console.log('Comparing:', { questionId, userAnswerLetter, correctAnswerLetter, match: userAnswerLetter === correctAnswerLetter });
       return userAnswerLetter === correctAnswerLetter;
