@@ -42,12 +42,19 @@ export function calculateScore(
 
   // Calculate basic score
   questions.forEach(question => {
-    if (userAnswers[question.id] === question.correctAnswer) {
-      correctAnswers++
+    const userAnswer = userAnswers[question.id];
+    if (userAnswer) {
+      // Normalize both answers to just the letter (A, B, C, D)
+      const userAnswerLetter = userAnswer.trim().charAt(0).toUpperCase();
+      const correctAnswerLetter = question.correctAnswer.trim().charAt(0).toUpperCase();
+      
+      if (userAnswerLetter === correctAnswerLetter) {
+        correctAnswers++
+      }
     }
   })
 
-  const score = (correctAnswers / totalQuestions) * 100
+  const score = Math.round((correctAnswers / totalQuestions) * 100)
 
   // Calculate topic-wise performance
   const topicStats: Record<string, { correct: number; total: number }> = {}
