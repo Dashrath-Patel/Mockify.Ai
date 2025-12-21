@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion } from "motion/react";
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
@@ -8,47 +8,73 @@ import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { StudyCalendar } from './StudyCalendar';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { 
-  TrendingUp, Target, Award, BookOpen, ArrowRight, Sparkles, 
+  TrendingUp, Target, Award, BookOpen, ArrowRight,
   Calendar, Clock, Zap, Trophy, Users, ChevronRight, Play,
   CheckCircle2, Flame, Brain, BarChart3
 } from 'lucide-react';
 import { createClient } from '@/lib/supabase';
 
-const performanceData = [
-  { date: 'Mon', score: 65, time: 2 },
-  { date: 'Tue', score: 70, time: 3 },
-  { date: 'Wed', score: 68, time: 2.5 },
-  { date: 'Thu', score: 75, time: 4 },
-  { date: 'Fri', score: 78, time: 3.5 },
-  { date: 'Sat', score: 82, time: 5 },
-  { date: 'Sun', score: 85, time: 4 },
+// Types for dashboard data
+interface DashboardStats {
+  testsCompleted: number;
+  testsThisWeek: number;
+  averageScore: number;
+  scoreImprovement: number;
+  studyTimeHours: number;
+  globalRank: number;
+  rankChange: number;
+}
+
+interface PerformanceData {
+  date: string;
+  score: number;
+  time: number;
+}
+
+interface SubjectData {
+  name: string;
+  value: number;
+  color: string;
+}
+
+interface UpcomingTest {
+  id: string;
+  title: string;
+  date: string;
+  time: string;
+  questions: number;
+}
+
+interface RecentActivity {
+  id: string;
+  action: string;
+  score?: number;
+  time: string;
+  timestamp: Date;
+  type: 'test' | 'upload' | 'practice';
+}
+
+interface WeeklyGoal {
+  goal: string;
+  current: number;
+  total: number;
+  color: string;
+}
+
+// Default fallback data
+const defaultPerformanceData: PerformanceData[] = [
+  { date: 'Mon', score: 0, time: 0 },
+  { date: 'Tue', score: 0, time: 0 },
+  { date: 'Wed', score: 0, time: 0 },
+  { date: 'Thu', score: 0, time: 0 },
+  { date: 'Fri', score: 0, time: 0 },
+  { date: 'Sat', score: 0, time: 0 },
+  { date: 'Sun', score: 0, time: 0 },
 ];
 
-const subjectData = [
-  { name: 'History', value: 25, color: '#8b5cf6' },
-  { name: 'Geography', value: 20, color: '#6366f1' },
-  { name: 'Polity', value: 18, color: '#3b82f6' },
-  { name: 'Economy', value: 22, color: '#06b6d4' },
-  { name: 'Science', value: 15, color: '#0ea5e9' },
-];
-
-const upcomingTests = [
-  { id: 1, title: 'UPSC Prelims Mock Test #12', date: 'Nov 4, 2025', time: '10:00 AM', questions: 100 },
-  { id: 2, title: 'Indian Polity Quiz', date: 'Nov 6, 2025', time: '2:00 PM', questions: 25 },
-  { id: 3, title: 'Current Affairs Weekly', date: 'Nov 8, 2025', time: '4:00 PM', questions: 50 },
-];
-
-const recentActivity = [
-  { id: 1, action: 'Completed Economy Test', score: 85, time: '2 hours ago' },
-  { id: 2, action: 'Uploaded Geography Notes', time: '5 hours ago' },
-  { id: 3, action: 'Started History Mock Test', score: 78, time: '1 day ago' },
-];
-
-const leaderboard = [
-  { rank: 1, name: 'Priya Sharma', score: 2450, avatar: 'PS', change: '+2' },
-  { rank: 2, name: 'Rahul Verma', score: 2380, avatar: 'RV', change: '-1' },
-  { rank: 3, name: 'You', score: 2340, avatar: 'D', change: '+1', isYou: true },
-  { rank: 4, name: 'Anjali Desai', score: 2290, avatar: 'AD', change: '0' },
+const topicColors = [
+  '#8b5cf6', '#6366f1', '#3b82f6', '#06b6d4', '#0ea5e9',
+  '#10b981', '#f59e0b', '#ef4444', '#ec4899', '#84cc16'
 ];
 
 const containerVariants = {
@@ -66,12 +92,427 @@ const itemVariants = {
   show: { opacity: 1, y: 0 }
 };
 
+// Helper function to format relative time
+function formatRelativeTime(date: Date): string {
+  const now = new Date();
+  const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+  
+  if (diffInSeconds < 60) return 'Just now';
+  if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} minutes ago`;
+  if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} hours ago`;
+  if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)} days ago`;
+  return date.toLocaleDateString();
+}
+
+// Helper to get initials from name
+function getInitials(name: string): string {
+  return name
+    .split(' ')
+    .map(n => n[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2);
+}
+
 export function Dashboard() {
   const [userName, setUserName] = useState<string>('User');
   const [examType, setExamType] = useState<string>('UPSC');
-  const [studyStreak, setStudyStreak] = useState<number>(12);
+  const [studyStreak, setStudyStreak] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [userId, setUserId] = useState<string | null>(null);
+  
+  // Dashboard data states
+  const [stats, setStats] = useState<DashboardStats>({
+    testsCompleted: 0,
+    testsThisWeek: 0,
+    averageScore: 0,
+    scoreImprovement: 0,
+    studyTimeHours: 0,
+    globalRank: 0,
+    rankChange: 0
+  });
+  const [performanceData, setPerformanceData] = useState<PerformanceData[]>(defaultPerformanceData);
+  const [subjectData, setSubjectData] = useState<SubjectData[]>([]);
+  const [upcomingTests, setUpcomingTests] = useState<UpcomingTest[]>([]);
+  const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([]);
+  const [weeklyGoals, setWeeklyGoals] = useState<WeeklyGoal[]>([
+    { goal: 'Complete 5 Tests', current: 0, total: 5, color: 'violet' },
+    { goal: 'Study 20 Hours', current: 0, total: 20, color: 'blue' },
+    { goal: 'Review 10 Topics', current: 0, total: 10, color: 'emerald' },
+  ]);
+  
   const supabase = createClient();
+
+  // Fetch dashboard stats (tests completed, average score, study time, rank)
+  const fetchDashboardStats = useCallback(async (currentUserId: string) => {
+    try {
+      console.log('Fetching dashboard stats for user:', currentUserId);
+      
+      // Fetch completed tests count from mock_tests table
+      const { data: completedTests, error: testsError } = await supabase
+        .from('mock_tests')
+        .select('id, created_at, status')
+        .eq('user_id', currentUserId)
+        .eq('status', 'completed')
+        .order('created_at', { ascending: false });
+
+      console.log('Completed tests from mock_tests:', { 
+        count: completedTests?.length, 
+        error: testsError,
+        data: completedTests 
+      });
+
+      if (testsError) {
+        console.error('Error fetching completed tests:', testsError);
+        return;
+      }
+
+      // Also try to fetch test results for scores and time data
+      const { data: testResults, error: resultsError } = await supabase
+        .from('test_results')
+        .select('score, time_spent, completed_at, test_id')
+        .eq('user_id', currentUserId)
+        .order('completed_at', { ascending: false });
+
+      console.log('Test results data:', { 
+        count: testResults?.length, 
+        error: resultsError,
+        data: testResults 
+      });
+
+      // Calculate stats
+      const totalTests = completedTests?.length || 0;
+      const now = new Date();
+      const weekStart = new Date(now.getTime());
+      weekStart.setDate(weekStart.getDate() - weekStart.getDay());
+      weekStart.setHours(0, 0, 0, 0);
+
+      const testsThisWeek = completedTests?.filter(t => 
+        new Date(t.created_at) >= weekStart
+      ).length || 0;
+
+      // Calculate average score from test_results if available
+      const avgScore = testResults && testResults.length > 0
+        ? Math.round(testResults.reduce((acc, r) => acc + (r.score || 0), 0) / testResults.length)
+        : 0;
+
+      // Calculate score improvement (compare last 5 tests vs previous 5)
+      let scoreImprovement = 0;
+      if (testResults && testResults.length >= 10) {
+        const recent5 = testResults.slice(0, 5).reduce((acc, r) => acc + (r.score || 0), 0) / 5;
+        const prev5 = testResults.slice(5, 10).reduce((acc, r) => acc + (r.score || 0), 0) / 5;
+        scoreImprovement = Math.round(recent5 - prev5);
+      }
+
+      // Calculate total study time (from time_spent in seconds)
+      const totalStudyTimeSeconds = testResults?.reduce((acc, r) => acc + (r.time_spent || 0), 0) || 0;
+      const studyTimeHours = Math.round(totalStudyTimeSeconds / 3600 * 10) / 10;
+
+      // Get user's rank based on total_points
+      const { data: userData } = await supabase
+        .from('users')
+        .select('total_points')
+        .eq('id', currentUserId)
+        .single();
+
+      const userPoints = userData?.total_points || 0;
+
+      // Count users with more points to determine rank
+      const { count: higherRankedCount } = await supabase
+        .from('users')
+        .select('*', { count: 'exact', head: true })
+        .gt('total_points', userPoints);
+
+      const globalRank = (higherRankedCount || 0) + 1;
+
+      setStats({
+        testsCompleted: totalTests,
+        testsThisWeek,
+        averageScore: avgScore,
+        scoreImprovement,
+        studyTimeHours,
+        globalRank,
+        rankChange: 0 // Would need historical data to calculate
+      });
+
+      // Update weekly goals
+      // For topics, we don't have topic_wise_score anymore, so just use a placeholder
+      setWeeklyGoals([
+        { goal: 'Complete 5 Tests', current: testsThisWeek, total: 5, color: 'violet' },
+        { goal: 'Study 20 Hours', current: Math.min(Math.round(studyTimeHours), 20), total: 20, color: 'blue' },
+        { goal: 'Review 10 Topics', current: Math.min(totalTests, 10), total: 10, color: 'emerald' },
+      ]);
+
+      console.log('Updated stats:', {
+        testsCompleted: totalTests,
+        testsThisWeek,
+        averageScore: avgScore,
+        scoreImprovement,
+        studyTimeHours,
+        globalRank
+      });
+
+    } catch (error) {
+      console.error('Error fetching dashboard stats:', error);
+    }
+  }, [supabase]);
+
+  // Fetch weekly performance data for chart
+  const fetchPerformanceData = useCallback(async (currentUserId: string) => {
+    try {
+      const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      const today = new Date();
+      const weekAgo = new Date(today);
+      weekAgo.setDate(weekAgo.getDate() - 7);
+
+      // Fetch from test_results table
+      const { data: testResults, error } = await supabase
+        .from('test_results')
+        .select('score, time_spent, completed_at')
+        .eq('user_id', currentUserId)
+        .gte('completed_at', weekAgo.toISOString())
+        .order('completed_at', { ascending: true });
+
+      if (error) {
+        console.error('Error fetching performance data:', error);
+        return;
+      }
+
+      // Group by day of week
+      const dailyData: { [key: string]: { scores: number[], time: number } } = {};
+      days.forEach(day => {
+        dailyData[day] = { scores: [], time: 0 };
+      });
+
+      testResults?.forEach(result => {
+        const date = new Date(result.completed_at);
+        const dayName = days[date.getDay()];
+        dailyData[dayName].scores.push(result.score || 0);
+        dailyData[dayName].time += (result.time_spent || 0) / 3600; // Convert to hours
+      });
+
+      // Create chart data starting from today and going back 7 days
+      const chartData: PerformanceData[] = [];
+      for (let i = 6; i >= 0; i--) {
+        const date = new Date();
+        date.setDate(date.getDate() - i);
+        const dayName = days[date.getDay()];
+        const dayData = dailyData[dayName];
+        const avgScore = dayData.scores.length > 0 
+          ? Math.round(dayData.scores.reduce((a, b) => a + b, 0) / dayData.scores.length)
+          : 0;
+        
+        chartData.push({
+          date: dayName,
+          score: avgScore,
+          time: Math.round(dayData.time * 10) / 10
+        });
+      }
+
+      setPerformanceData(chartData);
+    } catch (error) {
+      console.error('Error fetching performance data:', error);
+    }
+  }, [supabase]);
+
+  // Fetch topic distribution (focus areas)
+  const fetchTopicDistribution = useCallback(async (currentUserId: string) => {
+    try {
+      // Get topics directly from mock_tests table
+      const { data: mockTests, error: mockTestsError } = await supabase
+        .from('mock_tests')
+        .select('topic, title')
+        .eq('user_id', currentUserId);
+
+      if (mockTestsError) {
+        console.error('Error fetching topic distribution:', mockTestsError);
+        return;
+      }
+
+      // Aggregate topic data
+      const topicCounts: { [key: string]: number } = {};
+      
+      mockTests?.forEach((test) => {
+        if (test.topic) {
+          // Handle comma-separated topics
+          const topics = test.topic.split(',').map((t: string) => t.trim());
+          topics.forEach((topic: string) => {
+            if (topic) {
+              topicCounts[topic] = (topicCounts[topic] || 0) + 1;
+            }
+          });
+        } else if (test.title) {
+          // Fallback: Extract topic from title (format: "Topic - Test Name" or just "Topic")
+          const titleParts = test.title.split('-').map((s: string) => s.trim());
+          const topic = titleParts[0];
+          if (topic && topic !== 'Mock Test') {
+            topicCounts[topic] = (topicCounts[topic] || 0) + 1;
+          }
+        }
+      });
+
+      // Convert to array and calculate percentages
+      const total = Object.values(topicCounts).reduce((a, b) => a + b, 0) || 1;
+      const topicArray = Object.entries(topicCounts)
+        .map(([name, count], index) => ({
+          name,
+          value: Math.round((count / total) * 100),
+          color: topicColors[index % topicColors.length]
+        }))
+        .sort((a, b) => b.value - a.value)
+        .slice(0, 5);
+
+      if (topicArray.length > 0) {
+        setSubjectData(topicArray);
+      }
+    } catch (error) {
+      console.error('Error fetching topic distribution:', error);
+    }
+  }, [supabase]);
+
+  // Fetch upcoming tests (from scheduled_tests table, sorted by nearest date)
+  const fetchUpcomingTests = useCallback(async (currentUserId: string) => {
+    try {
+      // Fetch scheduled tests that are in the future
+      const now = new Date();
+      const todayStr = now.toISOString().split('T')[0];
+      
+      const { data: scheduledTests, error } = await supabase
+        .from('scheduled_tests')
+        .select(`
+          id,
+          scheduled_date,
+          scheduled_time,
+          test_id,
+          mock_tests!inner(title, total_questions)
+        `)
+        .eq('user_id', currentUserId)
+        .gte('scheduled_date', todayStr)
+        .order('scheduled_date', { ascending: true })
+        .order('scheduled_time', { ascending: true })
+        .limit(3);
+
+      if (error) {
+        console.error('Error fetching upcoming tests:', error);
+        return;
+      }
+
+      const formattedTests: UpcomingTest[] = scheduledTests?.map(test => {
+        const dateTime = new Date(`${test.scheduled_date}T${test.scheduled_time}`);
+        return {
+          id: test.id,
+          title: test.mock_tests?.title || 'Scheduled Test',
+          date: dateTime.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+          time: dateTime.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }),
+          questions: test.mock_tests?.total_questions || 0
+        };
+      }) || [];
+
+      setUpcomingTests(formattedTests);
+    } catch (error) {
+      console.error('Error fetching upcoming tests:', error);
+    }
+  }, [supabase]);
+
+  // Fetch recent activity
+  const fetchRecentActivity = useCallback(async (currentUserId: string) => {
+    try {
+      const activities: RecentActivity[] = [];
+
+      // Fetch recent test results from test_results table
+      const { data: testResults, error: testError } = await supabase
+        .from('test_results')
+        .select('id, score, completed_at, test_id')
+        .eq('user_id', currentUserId)
+        .order('completed_at', { ascending: false })
+        .limit(10);
+
+      if (testError) {
+        console.error('Error fetching test results:', testError);
+      }
+
+      // Get test titles for the results
+      if (testResults && testResults.length > 0) {
+        const testIds = testResults.map(r => r.test_id).filter(Boolean);
+        
+        if (testIds.length > 0) {
+          const { data: testsData } = await supabase
+            .from('mock_tests')
+            .select('id, title')
+            .in('id', testIds);
+          
+          const testTitleMap: { [key: string]: string } = {};
+          testsData?.forEach(t => {
+            testTitleMap[t.id] = t.title;
+          });
+
+          testResults.forEach(result => {
+            if (result.test_id && testTitleMap[result.test_id]) {
+              const timestamp = new Date(result.completed_at);
+              activities.push({
+                id: result.id,
+                action: `Completed ${testTitleMap[result.test_id]}`,
+                score: result.score,
+                time: formatRelativeTime(timestamp),
+                timestamp: timestamp,
+                type: 'test'
+              });
+            }
+          });
+        }
+      }
+
+      // Sort by most recent using actual timestamps
+      activities.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+
+      setRecentActivity(activities.slice(0, 3));
+    } catch (error) {
+      console.error('Error fetching recent activity:', error);
+    }
+  }, [supabase]);
+
+  // Calculate study streak
+  const calculateStudyStreak = useCallback(async (currentUserId: string) => {
+    try {
+      // Get all test completion dates from test_results table
+      const { data: testResults, error } = await supabase
+        .from('test_results')
+        .select('completed_at')
+        .eq('user_id', currentUserId)
+        .order('completed_at', { ascending: false });
+
+      if (error || !testResults?.length) {
+        setStudyStreak(0);
+        return;
+      }
+
+      // Get unique dates
+      const studyDates = new Set(
+        testResults.map(r => new Date(r.completed_at).toDateString())
+      );
+
+      // Calculate streak from today going backwards
+      let streak = 0;
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      for (let i = 0; i < 365; i++) {
+        const checkDate = new Date(today);
+        checkDate.setDate(checkDate.getDate() - i);
+        
+        if (studyDates.has(checkDate.toDateString())) {
+          streak++;
+        } else if (i > 0) {
+          // Allow one day gap (yesterday can be missing if checking today)
+          break;
+        }
+      }
+
+      setStudyStreak(streak);
+    } catch (error) {
+      console.error('Error calculating study streak:', error);
+    }
+  }, [supabase]);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -79,6 +520,8 @@ export function Dashboard() {
         const { data: { user } } = await supabase.auth.getUser();
         
         if (user) {
+          setUserId(user.id);
+          
           // Set default from auth immediately
           const defaultName = user.user_metadata?.name || user.user_metadata?.full_name || user.email?.split('@')[0] || 'User';
           setUserName(defaultName);
@@ -90,10 +533,13 @@ export function Dashboard() {
             .eq('id', user.id)
             .single();
           
+          let currentUserName = defaultName;
+          
           if (userData) {
             // Update with database values
             if (userData.name) {
               setUserName(userData.name);
+              currentUserName = userData.name;
             }
             
             // Set exam type (prioritize selected_exam, fallback to exam_type)
@@ -103,8 +549,15 @@ export function Dashboard() {
             }
           }
           
-          // TODO: Fetch actual study streak from database
-          setStudyStreak(12);
+          // Fetch all dashboard data in parallel
+          await Promise.all([
+            fetchDashboardStats(user.id),
+            fetchPerformanceData(user.id),
+            fetchTopicDistribution(user.id),
+            fetchUpcomingTests(user.id),
+            fetchRecentActivity(user.id),
+            calculateStudyStreak(user.id)
+          ]);
         }
       } catch (error) {
         console.error('Error fetching user data:', error);
@@ -114,7 +567,7 @@ export function Dashboard() {
     };
 
     fetchUserData();
-  }, [supabase]);
+  }, [supabase, fetchDashboardStats, fetchPerformanceData, fetchTopicDistribution, fetchUpcomingTests, fetchRecentActivity, calculateStudyStreak]);
 
   return (
     <div className="p-4 md:p-6 lg:p-8 max-w-[1600px] mx-auto space-y-6 relative">
@@ -169,23 +622,23 @@ export function Dashboard() {
         {[
           { 
             title: "Tests Completed", 
-            value: "47", 
-            change: "+3 this week", 
+            value: stats.testsCompleted.toString(), 
+            change: `+${stats.testsThisWeek} this week`, 
             icon: Target, 
             iconBg: "bg-gradient-to-br from-emerald-400 to-teal-500",
             iconColor: "text-white"
           },
           { 
             title: "Average Score", 
-            value: "82%", 
-            change: "+5% improvement", 
+            value: `${stats.averageScore}%`, 
+            change: `${stats.scoreImprovement >= 0 ? '+' : ''}${stats.scoreImprovement}% improvement`, 
             icon: TrendingUp, 
             iconBg: "bg-gradient-to-br from-violet-400 to-purple-500",
             iconColor: "text-white"
           },
           { 
             title: "Study Time", 
-            value: "24.5h", 
+            value: `${stats.studyTimeHours}h`, 
             change: "This week", 
             icon: Clock, 
             iconBg: "bg-gradient-to-br from-amber-400 to-orange-500",
@@ -193,8 +646,8 @@ export function Dashboard() {
           },
           { 
             title: "Global Rank", 
-            value: "#342", 
-            change: "+28 positions", 
+            value: stats.globalRank > 0 ? `#${stats.globalRank}` : '-', 
+            change: stats.rankChange !== 0 ? `${stats.rankChange > 0 ? '+' : ''}${stats.rankChange} positions` : 'Keep going!', 
             icon: Trophy, 
             iconBg: "bg-gradient-to-br from-rose-400 to-pink-500",
             iconColor: "text-white"
@@ -283,7 +736,7 @@ export function Dashboard() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                {upcomingTests.map((test, index) => (
+                {upcomingTests.length > 0 ? upcomingTests.map((test, index) => (
                   <motion.div
                     key={test.id}
                     initial={{ opacity: 0, x: -10 }}
@@ -312,15 +765,80 @@ export function Dashboard() {
                       </Badge>
                     </div>
                   </motion.div>
-                ))}
+                )) : (
+                  <div className="text-center py-6 text-gray-500 dark:text-gray-400">
+                    <BookOpen className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                    <p className="text-sm font-medium">No upcoming tests</p>
+                    <p className="text-xs">Create a new test to get started</p>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </motion.div>
 
         </div>
 
-        {/* Middle Column - Charts */}
+        {/* Right Column - Recent Activity & Performance */}
         <div className="lg:col-span-2 space-y-6">
+          {/* Recent Activity */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="group cursor-pointer"
+            whileHover={{ 
+              y: -4,
+              transition: { duration: 0.2 }
+            }}
+          >
+            <Card className="rounded-2xl bg-[#F9F6F2] dark:bg-[#1a1a1a] border-[3px] border-black dark:border-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] group-hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] dark:group-hover:shadow-[6px_6px_0px_0px_rgba(255,255,255,1)] transition-all duration-200">
+              <CardHeader>
+                <CardTitle className="text-black dark:text-white flex items-center gap-2 font-bold">
+                  <Clock className="h-5 w-5 text-black dark:text-white" />
+                  Recent Activity
+                </CardTitle>
+              </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {recentActivity.length > 0 ? recentActivity.map((activity, index) => (
+                      <motion.div
+                        key={activity.id}
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.3 + index * 0.1 }}
+                        className="flex items-center gap-4 p-3 rounded-xl bg-white dark:bg-[#2a2a2a] border-2 border-black dark:border-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,0.5)]"
+                      >
+                        <div className="p-2 rounded-lg bg-gradient-to-r from-rose-400 to-pink-500 border-2 border-black dark:border-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,0.3)]">
+                          {activity.type === 'test' || activity.type === 'practice' ? (
+                            <CheckCircle2 className="h-4 w-4 text-black" />
+                          ) : (
+                            <BookOpen className="h-4 w-4 text-black" />
+                          )}
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-black dark:text-white text-sm font-bold">{activity.action}</p>
+                          <p className="text-xs text-[#555555] dark:text-gray-400 font-medium">{activity.time}</p>
+                        </div>
+                        {activity.score !== undefined && (
+                          <Badge className="bg-gradient-to-r from-emerald-400 to-teal-500 border-2 border-black dark:border-white text-white font-bold shadow-lg">
+                            {activity.score}%
+                          </Badge>
+                        )}
+                      </motion.div>
+                    )) : (
+                      <div className="text-center py-6 text-gray-500 dark:text-gray-400">
+                        <Clock className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                        <p className="text-sm font-medium">No recent activity</p>
+                        <p className="text-xs">Start learning to see your progress</p>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+          </motion.div>
+
+        {/* Middle Column - Charts */}
+        <div className="space-y-6">
           {/* Performance Chart */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -421,36 +939,46 @@ export function Dashboard() {
                   </CardTitle>
                 </CardHeader>
                   <CardContent>
-                    <div className="flex items-center justify-center mb-4">
-                      <ResponsiveContainer width="100%" height={160}>
-                        <PieChart>
-                          <Pie
-                            data={subjectData}
-                            cx="50%"
-                            cy="50%"
-                            innerRadius={45}
-                            outerRadius={70}
-                            paddingAngle={3}
-                            dataKey="value"
-                          >
-                            {subjectData.map((entry, index) => (
-                              <Cell key={`cell-${index}`} fill={entry.color} />
-                            ))}
-                          </Pie>
-                        </PieChart>
-                      </ResponsiveContainer>
-                    </div>
-                    <div className="space-y-2">
-                      {subjectData.map((item, index) => (
-                        <div key={index} className="flex items-center justify-between text-sm">
-                          <div className="flex items-center gap-2">
-                            <div className="w-3 h-3 rounded-full" style={{ backgroundColor: item.color }}></div>
-                            <span className="text-gray-700 dark:text-gray-300 font-medium">{item.name}</span>
-                          </div>
-                          <span className="text-gray-600 dark:text-gray-400 font-semibold">{item.value}%</span>
+                    {subjectData.length > 0 ? (
+                      <>
+                        <div className="flex items-center justify-center mb-4">
+                          <ResponsiveContainer width="100%" height={160}>
+                            <PieChart>
+                              <Pie
+                                data={subjectData as any}
+                                cx="50%"
+                                cy="50%"
+                                innerRadius={45}
+                                outerRadius={70}
+                                paddingAngle={3}
+                                dataKey="value"
+                              >
+                                {subjectData.map((entry, index) => (
+                                  <Cell key={`cell-${index}`} fill={entry.color} />
+                                ))}
+                              </Pie>
+                            </PieChart>
+                          </ResponsiveContainer>
                         </div>
-                      ))}
-                    </div>
+                        <div className="space-y-2">
+                          {subjectData.map((item, index) => (
+                            <div key={index} className="flex items-center justify-between text-sm">
+                              <div className="flex items-center gap-2">
+                                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: item.color }}></div>
+                                <span className="text-gray-700 dark:text-gray-300 font-medium">{item.name}</span>
+                              </div>
+                              <span className="text-gray-600 dark:text-gray-400 font-semibold">{item.value}%</span>
+                            </div>
+                          ))}
+                        </div>
+                      </>
+                    ) : (
+                      <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                        <Brain className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                        <p className="text-sm font-medium">No data yet</p>
+                        <p className="text-xs">Complete tests to see your focus areas</p>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
             </motion.div>
@@ -474,11 +1002,7 @@ export function Dashboard() {
                   </CardTitle>
                 </CardHeader>
                   <CardContent className="space-y-4">
-                    {[
-                      { goal: 'Complete 5 Tests', current: 3, total: 5, color: 'violet' },
-                      { goal: 'Study 20 Hours', current: 15, total: 20, color: 'blue' },
-                      { goal: 'Review 10 Topics', current: 7, total: 10, color: 'emerald' },
-                    ].map((item, index) => (
+                    {weeklyGoals.map((item, index) => (
                       <div key={index} className="space-y-2">
                         <div className="flex items-center justify-between text-sm">
                           <span className="text-gray-700 dark:text-gray-300 font-medium">{item.goal}</span>
@@ -487,7 +1011,7 @@ export function Dashboard() {
                         <div className="relative h-2 bg-gray-200 dark:bg-slate-800 rounded-full overflow-hidden">
                           <motion.div
                             initial={{ width: 0 }}
-                            animate={{ width: `${(item.current / item.total) * 100}%` }}
+                            animate={{ width: `${Math.min((item.current / item.total) * 100, 100)}%` }}
                             transition={{ duration: 1, delay: 0.5 + index * 0.1 }}
                             className={`h-full bg-gradient-to-r from-${item.color}-600 to-${item.color}-400`}
                           />
@@ -499,161 +1023,8 @@ export function Dashboard() {
             </motion.div>
           </div>
         </div>
+        </div>
       </div>
-
-      {/* Bottom Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Recent Activity */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-          className="lg:col-span-2 group cursor-pointer"
-          whileHover={{ 
-            y: -4,
-            transition: { duration: 0.2 }
-          }}
-        >
-          <Card className="rounded-2xl bg-[#F9F6F2] dark:bg-[#1a1a1a] border-[3px] border-black dark:border-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] group-hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] dark:group-hover:shadow-[6px_6px_0px_0px_rgba(255,255,255,1)] transition-all duration-200">
-            <CardHeader>
-              <CardTitle className="text-black dark:text-white flex items-center gap-2 font-bold">
-                <Clock className="h-5 w-5 text-black dark:text-white" />
-                Recent Activity
-              </CardTitle>
-            </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {recentActivity.map((activity, index) => (
-                    <motion.div
-                      key={activity.id}
-                      initial={{ opacity: 0, x: -10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.6 + index * 0.1 }}
-                      className="flex items-center gap-4 p-3 rounded-xl bg-white dark:bg-[#2a2a2a] border-2 border-black dark:border-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,0.5)]"
-                    >
-                      <div className="p-2 rounded-lg bg-gradient-to-r from-rose-400 to-pink-500 border-2 border-black dark:border-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,0.3)]">
-                        {activity.score ? (
-                          <CheckCircle2 className="h-4 w-4 text-black" />
-                        ) : (
-                          <BookOpen className="h-4 w-4 text-black" />
-                        )}
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-black dark:text-white text-sm font-bold">{activity.action}</p>
-                        <p className="text-xs text-[#555555] dark:text-gray-400 font-medium">{activity.time}</p>
-                      </div>
-                      {activity.score && (
-                        <Badge className="bg-gradient-to-r from-emerald-400 to-teal-500 border-2 border-black dark:border-white text-white font-bold shadow-lg">
-                          {activity.score}%
-                        </Badge>
-                      )}
-                    </motion.div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-        </motion.div>
-
-        {/* Leaderboard */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6 }}
-          className="group cursor-pointer"
-          whileHover={{ 
-            y: -4,
-            transition: { duration: 0.2 }
-          }}
-        >
-          <Card className="rounded-2xl bg-[#F9F6F2] dark:bg-[#1a1a1a] border-[3px] border-black dark:border-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] group-hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] dark:group-hover:shadow-[6px_6px_0px_0px_rgba(255,255,255,1)] transition-all duration-200">
-            <CardHeader>
-              <CardTitle className="text-black dark:text-white flex items-center gap-2 font-bold">
-                <Trophy className="h-5 w-5 text-black dark:text-white" />
-                Leaderboard
-              </CardTitle>
-            </CardHeader>
-              <CardContent className="space-y-3">
-                {leaderboard.map((user, index) => (
-                  <motion.div
-                    key={user.rank}
-                    initial={{ opacity: 0, x: 10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.7 + index * 0.1 }}
-                    className={`flex items-center gap-3 p-3 rounded-xl border-2 border-black dark:border-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,0.5)] ${
-                      user.isYou 
-                        ? 'bg-gradient-to-r from-emerald-400 to-teal-500 text-white font-bold' 
-                        : 'bg-white dark:bg-[#2a2a2a]'
-                    }`}
-                  >
-                    <div className={`text-sm w-6 text-center font-bold ${
-                      user.isYou ? 'text-black' : 'text-black dark:text-white'
-                    }`}>
-                      #{user.rank}
-                    </div>
-                    <Avatar className="h-8 w-8 border-2 border-black dark:border-white">
-                      <AvatarFallback className="text-xs font-bold bg-white dark:bg-[#2a2a2a] text-black dark:text-white">
-                        {user.avatar}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1">
-                      <p className="text-sm font-bold text-black dark:text-white">
-                        {user.name}
-                      </p>
-                      <p className="text-xs text-[#555555] dark:text-gray-400 font-bold">{user.score} pts</p>
-                    </div>
-                    <Badge variant="outline" className="text-xs font-bold bg-white dark:bg-[#2a2a2a] border-2 border-black dark:border-white text-black dark:text-white">
-                      {user.change}
-                    </Badge>
-                  </motion.div>
-                ))}
-              </CardContent>
-            </Card>
-        </motion.div>
-      </div>
-
-      {/* AI Insight */}
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: 0.7 }}
-        className="group cursor-pointer"
-        whileHover={{ 
-          y: -4,
-          transition: { duration: 0.2 }
-        }}
-      >
-        <Card className="rounded-2xl bg-[#F9F6F2] dark:bg-[#1a1a1a] border-[3px] border-black dark:border-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] group-hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] dark:group-hover:shadow-[6px_6px_0px_0px_rgba(255,255,255,1)] transition-all duration-200 overflow-hidden">
-          <CardContent className="pt-6">
-            <div className="flex items-start gap-4">
-              <div className="p-3 rounded-xl bg-gradient-to-r from-violet-400 to-purple-500 border-2 border-black dark:border-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,0.3)]">
-                <Sparkles className="h-6 w-6 text-black" />
-              </div>
-              <div className="flex-1">
-                <h3 className="text-black dark:text-white mb-2 flex items-center gap-2 font-bold">
-                  AI-Powered Insights
-                  <Badge className="bg-gradient-to-r from-amber-400 to-orange-500 border-[2px] border-black dark:border-white text-white text-xs font-bold shadow-lg">
-                    NEW
-                  </Badge>
-                </h3>
-                <p className="text-[#555555] dark:text-gray-300 leading-relaxed mb-4 font-medium">
-                  Excellent progress this week! Your consistency in <span className="text-black dark:text-white font-bold">History</span> and <span className="text-black dark:text-white font-bold">Geography</span> is paying off. 
-                  Consider spending 30 more minutes daily on <span className="text-black dark:text-white font-bold">Indian Polity</span> to reach your 85% target by next week.
-                </p>
-                <div className="flex gap-3 flex-wrap">
-                  <Button className="bg-gradient-to-r from-violet-400 to-purple-500 hover:from-violet-500 hover:to-purple-600 text-white rounded-xl border-[2px] border-black dark:border-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,0.3)] font-bold">
-                    <Play className="h-4 w-4 mr-2" />
-                    Start Recommended Test
-                  </Button>
-                  <Button variant="outline" className="rounded-xl bg-white dark:bg-[#2a2a2a] border-[2px] border-black dark:border-white text-black dark:text-white font-bold shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,0.3)]">
-                    View Study Plan
-                    <ArrowRight className="h-4 w-4 ml-2" />
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </motion.div>
     </div>
   );
 }
