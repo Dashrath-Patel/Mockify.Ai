@@ -180,8 +180,6 @@ OUTPUT FORMAT (JSON array only, no markdown or extra text):
 ]
 
 CRITICAL: Return ONLY valid JSON array. No markdown code blocks, no explanatory text, just the array.`;
-
-    const maxTokens = Math.min(8000, 150 * request.questionCount + 500); // Dynamic token allocation
     
     let responseText: string;
     
@@ -193,7 +191,6 @@ CRITICAL: Return ONLY valid JSON array. No markdown code blocks, no explanatory 
         system: systemMessage,
         prompt: prompt,
         temperature: 0.8,
-        maxTokens: maxTokens,
         topP: 0.95,
       });
       
@@ -216,7 +213,6 @@ Format (JSON only):
           system: "Output only valid JSON array of exam questions.",
           prompt: compactPrompt,
           temperature: 0.8,
-          maxTokens: Math.min(4096, maxTokens),
           topP: 0.95,
         });
         
@@ -644,7 +640,6 @@ Return ONLY the JSON object.`;
       system: systemMessage,
       prompt: prompt,
       temperature: 0.7,
-      maxTokens: 2048,
     });
 
     if (!text) {

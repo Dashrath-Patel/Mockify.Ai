@@ -67,9 +67,12 @@ export interface ParsedQuestion {
   topic?: string;
   difficulty?: 'easy' | 'medium' | 'hard';
   metadata?: {
-    page?: number;
+    page?: number | string;
     source: string;
     chunkIndex: number;
+    originalNumber?: number;
+    raw_text?: string;
+    confidence?: number;
   };
 }
 
@@ -100,8 +103,9 @@ export interface ExtractionResult {
  */
 async function extractFromPDF(buffer: Buffer, filename: string): Promise<ExtractionResult> {
   try {
-    // Create a temporary blob for PDFLoader
-    const blob = new Blob([buffer], { type: 'application/pdf' });
+    // Create a temporary blob for PDFLoader - convert Buffer to Uint8Array for compatibility
+    const uint8Array = new Uint8Array(buffer);
+    const blob = new Blob([uint8Array], { type: 'application/pdf' });
     const loader = new PDFLoader(blob, {
       splitPages: true,
       parsedItemSeparator: '\n'
@@ -173,8 +177,9 @@ async function extractFromPDF(buffer: Buffer, filename: string): Promise<Extract
  */
 async function extractFromDOCX(buffer: Buffer, filename: string): Promise<ExtractionResult> {
   try {
-    // Create a temporary blob for DocxLoader
-    const blob = new Blob([buffer], { 
+    // Create a temporary blob for DocxLoader - convert Buffer to Uint8Array for compatibility
+    const uint8Array = new Uint8Array(buffer);
+    const blob = new Blob([uint8Array], { 
       type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' 
     });
     

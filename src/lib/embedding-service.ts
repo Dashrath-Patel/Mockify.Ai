@@ -50,8 +50,6 @@ async function getEmbeddingPipeline() {
         'Xenova/all-MiniLM-L6-v2',
         {
           quantized: true, // Quantized model is more reliable
-          device: 'auto',
-          dtype: 'fp32',
           progress_callback: (progress: any) => {
             if (progress.status === 'progress' && progress.file) {
               console.log(`  Downloading ${progress.file}: ${Math.round((progress.loaded / progress.total) * 100)}%`);
