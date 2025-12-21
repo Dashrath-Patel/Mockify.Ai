@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { AlertCircle, Brain, Zap, Loader2, FileText } from 'lucide-react';
+import { AlertCircle, Brain, Zap, Loader2, FileText, Search, X } from 'lucide-react';
 import { createClient } from '@/lib/supabase';
 import { toast } from 'sonner';
 import { TestInstructionsScreen } from './TestInstructionsScreen';
@@ -64,6 +64,7 @@ export function MockTests() {
   const [syllabusMaterials, setSyllabusMaterials] = useState<Material[]>([]);
   const [selectedSyllabus, setSelectedSyllabus] = useState('');
   const [syllabusTopics, setSyllabusTopics] = useState<string[]>([]);
+  const [topicSearchQuery, setTopicSearchQuery] = useState('');
   const [testName, setTestName] = useState('');
   const [currentTestId, setCurrentTestId] = useState<string | null>(null);
   const [showScheduleModal, setShowScheduleModal] = useState(false);
@@ -1149,8 +1150,41 @@ export function MockTests() {
                       </div>
                       {syllabusTopics.length > 0 ? (
                         <div className="border-2 border-violet-200 dark:border-violet-700 rounded-lg p-4 bg-white dark:bg-slate-800/50 max-h-[300px] overflow-y-auto space-y-2">
+                          {/* Search bar for filtering topics */}
+                          <div className="sticky top-0 bg-white dark:bg-slate-800/50 pb-3 mb-2 border-b border-violet-100 dark:border-violet-800">
+                            <div className="relative">
+                              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                              <Input
+                                type="text"
+                                placeholder="Search topics..."
+                                value={topicSearchQuery}
+                                onChange={(e) => setTopicSearchQuery(e.target.value)}
+                                className="pl-9 h-9 text-sm rounded-lg bg-gray-50 dark:bg-slate-700/50 border-gray-200 dark:border-slate-600 focus:border-violet-400 dark:focus:border-violet-500"
+                              />
+                              {topicSearchQuery && (
+                                <button
+                                  type="button"
+                                  onClick={() => setTopicSearchQuery('')}
+                                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                                >
+                                  <X className="h-4 w-4" />
+                                </button>
+                              )}
+                            </div>
+                            {topicSearchQuery && (
+                              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                Showing {syllabusTopics.filter(topic => 
+                                  topic.toLowerCase().includes(topicSearchQuery.toLowerCase())
+                                ).length} of {syllabusTopics.length} topics
+                              </p>
+                            )}
+                          </div>
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                            {syllabusTopics.map((topic, index) => (
+                            {syllabusTopics
+                              .filter(topic => 
+                                topic.toLowerCase().includes(topicSearchQuery.toLowerCase())
+                              )
+                              .map((topic, index) => (
                               <label
                                 key={index}
                                 className="flex items-start gap-2 p-2 rounded hover:bg-violet-50 dark:hover:bg-violet-900/20 cursor-pointer transition-colors"
@@ -1170,6 +1204,13 @@ export function MockTests() {
                                 <span className="text-sm text-gray-700 dark:text-gray-300">{topic}</span>
                               </label>
                             ))}
+                            {topicSearchQuery && syllabusTopics.filter(topic => 
+                              topic.toLowerCase().includes(topicSearchQuery.toLowerCase())
+                            ).length === 0 && (
+                              <p className="col-span-2 text-sm text-gray-500 dark:text-gray-400 text-center py-4">
+                                No topics found matching &quot;{topicSearchQuery}&quot;
+                              </p>
+                            )}
                           </div>
                           {selectedTopics.length > 0 && (
                             <div className="mt-3 pt-3 border-t border-violet-200 dark:border-violet-700">
