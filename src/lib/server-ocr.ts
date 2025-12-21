@@ -21,7 +21,6 @@ import fs from 'fs';  // For temp file cleanup
 // Dynamic imports for server-only libs
 let pdfParse: any;
 let mammoth: any;
-let pdfPoppler: any;
 
 // Validate env
 const apiKey = process.env.HUGGINGFACE_API_KEY;
@@ -59,57 +58,9 @@ export async function extractTextFromPDF(pdfBuffer: Buffer, language: string = '
     
     const cleanedText = cleanExtractedText(data.text);
     
-    // Bumped threshold for better detection
+    // If text extraction is insufficient, log warning
     if (cleanedText.length < 200) {
-      console.log('Low text yield from PDF - attempting OCR on scanned pages...');
-      
-      try {
-        // Dynamically import pdf-poppler (optional - no TypeScript types available)
-        if (!pdfPoppler) {
-          pdfPoppler = await import('pdf-poppler').catch(() => null);
-        }
-        
-        if (!pdfPoppler) {
-          console.warn('pdf-poppler not available, skipping advanced PDF OCR');
-          return { text: cleanedText, success: true, metadata: { method: 'pdf-parse' } };
-        }
-        
-        // Convert PDF to images and OCR each page
-        const opts = { 
-          format: 'png', 
-          out_dir: '/tmp', 
-          out_prefix: 'page', 
-          page: null  // All pages
-        };
-        const images = await pdfPoppler.convert(pdfBuffer, opts);
-      
-      let fullText = '';
-      let avgConfidence = 0;
-      let pageCount = images.length;
-      
-      for (let i = 0; i < images.length; i++) {
-        const imgPath = images[i];
-        const imgBuffer = await fs.promises.readFile(imgPath);
-        const pageOcr = await extractTextFromImage(imgBuffer, 'image/png', language, true);
-        fullText += pageOcr.text + '\n\n--- Page ' + (i + 1) + ' ---\n\n';
-        avgConfidence = (avgConfidence * i + pageOcr.confidence) / (i + 1);
-        
-        // Cleanup temp file
-        fs.unlinkSync(imgPath);
-      }
-      
-      console.log(`✅ PDF OCR completed: ${pageCount} pages, avg ${avgConfidence.toFixed(1)}% confidence`);
-      
-      return {
-        text: cleanExtractedText(fullText),
-        confidence: avgConfidence,
-        method: 'pdf-ocr-multi-page',
-        pageCount
-      };
-      } catch (ocrError) {
-        console.warn('Advanced PDF OCR failed, using basic extraction:', ocrError);
-        return { text: cleanedText, success: true, metadata: { method: 'pdf-parse-fallback' } };
-      }
+      console.warn('Low text yield from PDF - document may be scanned or image-based');
     }
     
     console.log(`✅ PDF parsed: ${data.numpages} pages, ${cleanedText.length} characters`);
