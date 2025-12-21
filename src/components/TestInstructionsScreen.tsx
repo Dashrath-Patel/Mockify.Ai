@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { Button } from './ui/button';
 import { Checkbox } from './ui/checkbox';
-import { Clock, FileText, ArrowLeft, Play, CheckCircle, XCircle, MinusCircle } from 'lucide-react';
+import { Clock, FileText, ArrowLeft, Play, CheckCircle, XCircle, MinusCircle, Calendar } from 'lucide-react';
 
 interface TestInstructionsScreenProps {
   testTitle: string;
@@ -15,6 +15,7 @@ interface TestInstructionsScreenProps {
   negativeMarking?: number;
   onStartTest: () => void;
   onGoBack: () => void;
+  onScheduleTest?: () => void;
 }
 
 export function TestInstructionsScreen({
@@ -25,7 +26,8 @@ export function TestInstructionsScreen({
   marksPerQuestion,
   negativeMarking = 0.66,
   onStartTest,
-  onGoBack
+  onGoBack,
+  onScheduleTest
 }: TestInstructionsScreenProps) {
   const [agreedToTerms, setAgreedToTerms] = useState(false);
 
@@ -148,6 +150,17 @@ export function TestInstructionsScreen({
                   <Play className="w-4 h-4 mr-2 fill-current" />
                   Begin Test
                 </Button>
+
+                {onScheduleTest && (
+                  <Button
+                    onClick={onScheduleTest}
+                    variant="outline"
+                    className="w-full h-12 border-2 border-[#030213] dark:border-purple-600 text-[#030213] dark:text-purple-600 hover:bg-[#030213]/5 dark:hover:bg-purple-600/10 font-semibold rounded-xl transition-all"
+                  >
+                    <Calendar className="w-4 h-4 mr-2" />
+                    Schedule for Later
+                  </Button>
+                )}
 
                 <div className="flex items-center justify-center gap-2 text-xs text-gray-400">
                   <Clock className="w-3.5 h-3.5" />
