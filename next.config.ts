@@ -59,6 +59,12 @@ const nextConfig: NextConfig = {
   
   // Webpack optimizations
   webpack: (config, { isServer }) => {
+    // Suppress warnings for optional dependencies
+    config.ignoreWarnings = [
+      { module: /node_modules\/pdf-poppler/ },
+      /Can't resolve 'pdf-poppler'/,
+    ];
+    
     // Optimize bundle splitting
     if (!isServer) {
       config.optimization = {

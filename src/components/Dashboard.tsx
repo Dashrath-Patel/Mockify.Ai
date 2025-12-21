@@ -399,12 +399,13 @@ export function Dashboard() {
 
       const formattedTests: UpcomingTest[] = scheduledTests?.map(test => {
         const dateTime = new Date(`${test.scheduled_date}T${test.scheduled_time}`);
+        const mockTest = Array.isArray(test.mock_tests) ? test.mock_tests[0] : test.mock_tests;
         return {
           id: test.id,
-          title: test.mock_tests?.title || 'Scheduled Test',
+          title: mockTest?.title || 'Scheduled Test',
           date: dateTime.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
           time: dateTime.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }),
-          questions: test.mock_tests?.total_questions || 0
+          questions: mockTest?.total_questions || 0
         };
       }) || [];
 
