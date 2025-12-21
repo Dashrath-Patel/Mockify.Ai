@@ -10,8 +10,10 @@ import { toast } from 'sonner';
 import { TestInstructionsScreen } from './TestInstructionsScreen';
 import { MockTestInterface } from './MockTestInterface';
 import { TestResultsScreen } from './TestResultsScreen';
+import { ScheduleTestModal } from './ScheduleTestModal';
 
 interface Question {
+  id?: string;
   question: string;
   options: string[];
   correctAnswer: string;
@@ -63,6 +65,8 @@ export function MockTests() {
   const [selectedSyllabus, setSelectedSyllabus] = useState('');
   const [syllabusTopics, setSyllabusTopics] = useState<string[]>([]);
   const [testName, setTestName] = useState('');
+  const [currentTestId, setCurrentTestId] = useState<string | null>(null);
+  const [showScheduleModal, setShowScheduleModal] = useState(false);
   
   const supabase = createClient();
   
@@ -464,6 +468,8 @@ export function MockTests() {
     if (!userId) return;
     
     const testId = crypto.randomUUID();
+    setCurrentTestId(testId); // Store test ID in state
+    
     const topicString = selectedTopics.join(', ');
     const finalTestName = testName.trim() || generateSmartTestName(selectedTopics);
     const timestamp = new Date().toISOString();
@@ -518,7 +524,7 @@ export function MockTests() {
       
       if (testError) throw testError;
       
-      // Save questions to test_questions table
+      // Save questions to test_questions table and get back the IDs
       const questionsToInsert = generatedQuestions.map((q, index) => ({
         test_id: testId,
         question_number: index + 1,
@@ -532,11 +538,22 @@ export function MockTests() {
         negative_marks: negativeMarking
       }));
       
-      const { error: questionsError } = await supabase
+      const { data: insertedQuestions, error: questionsError } = await supabase
         .from('test_questions')
-        .insert(questionsToInsert);
+        .insert(questionsToInsert)
+        .select('id, question_number');
       
       if (questionsError) throw questionsError;
+      
+      // Update the questions array with IDs from the database
+      if (insertedQuestions && insertedQuestions.length === generatedQuestions.length) {
+        insertedQuestions.forEach((dbQuestion) => {
+          const index = dbQuestion.question_number - 1;
+          if (generatedQuestions[index]) {
+            generatedQuestions[index].id = dbQuestion.id;
+          }
+        });
+      }
       
       console.log('✓ Test saved to database:', testId);
       
@@ -621,25 +638,36 @@ export function MockTests() {
             : ['Great job! Keep practicing to maintain your performance.']
         };
 
-        // Save to database via API
-        const response = await fetch('/api/save-results', {
+        // Convert answers from index-based to ID-based for the API
+        console.log('Converting answers:', { answers, questionsCount: questions.length });
+        const answersById: Record<string, string> = {};
+        Object.entries(answers).forEach(([index, answer]) => {
+          const questionIndex = parseInt(index);
+          const question = questions[questionIndex];
+          console.log(`Question ${index}:`, { questionIndex, hasQuestion: !!question, questionId: question?.id, answer });
+          if (question && question.id) {
+            answersById[question.id] = answer;
+          }
+        });
+        console.log('Converted answersById:', answersById);
+
+        // Save test results to test_results table via submit-test API
+        const response = await fetch('/api/submit-test', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            userId,
-            score: Math.round((correctCount / questions.length) * 100),
-            totalQuestions: questions.length,
-            correctAnswers: correctCount,
-            timeTaken,
-            analytics
+            testId: currentTestId,
+            answers: answersById,
+            timeTaken: timeTaken
           })
         });
 
         if (response.ok) {
-          console.log('✅ Test results saved for adaptive practice analysis');
+          const data = await response.json();
+          console.log('✅ Test results saved successfully:', data);
         } else {
           const errorData = await response.json();
-          console.error('Failed to save results:', errorData.error);
+          console.error('Failed to save test results:', errorData.error);
         }
       } catch (error) {
         console.error('Failed to save test results:', error);
@@ -854,16 +882,26 @@ export function MockTests() {
     const testTitle = testName.trim() || generateSmartTestName(selectedTopics);
     
     return (
-      <TestInstructionsScreen
-        testTitle={testTitle}
-        duration={testDuration}
-        totalQuestions={questions.length}
-        totalMarks={questions.length * 2}
-        marksPerQuestion={2}
-        negativeMarking={negativeMarking}
-        onStartTest={handleStartTest}
-        onGoBack={handleGoHome}
-      />
+      <>
+        <TestInstructionsScreen
+          testTitle={testTitle}
+          duration={testDuration}
+          totalQuestions={questions.length}
+          totalMarks={questions.length * 2}
+          marksPerQuestion={2}
+          negativeMarking={negativeMarking}
+          onStartTest={handleStartTest}
+          onGoBack={handleGoHome}
+          onScheduleTest={currentTestId ? () => setShowScheduleModal(true) : undefined}
+        />
+        {showScheduleModal && currentTestId && (
+          <ScheduleTestModal
+            testId={currentTestId}
+            testTitle={testTitle}
+            onClose={() => setShowScheduleModal(false)}
+          />
+        )}
+      </>
     );
   }
 
@@ -979,7 +1017,7 @@ export function MockTests() {
                               </div>
                               {materials.map((material) => {
                                 // Clean up the filename for display
-                                const rawName = material.file_url?.split('/').pop() || material.filename || 'Unnamed';
+                                const rawName = material.file_url?.split('/').pop() || 'Unnamed';
                                 // Remove timestamp prefix (e.g., "1766263146288-") and file extension
                                 const cleanName = rawName
                                   .replace(/^\d{13}-/, '') // Remove 13-digit timestamp prefix
