@@ -20,6 +20,9 @@ interface SavedTest {
   questions: any[];
   duration: number;
   created_at: string;
+  scheduled_date?: string;
+  scheduled_time?: string;
+  is_scheduled?: boolean;
 }
 
 export function TestHistory() {
@@ -30,9 +33,19 @@ export function TestHistory() {
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [testToDelete, setTestToDelete] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
+  const [currentTime, setCurrentTime] = useState(new Date());
   
   const supabase = createClient();
   const router = useRouter();
+
+  // Update current time every minute for countdown
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 60000); // Update every minute
+    
+    return () => clearInterval(timer);
+  }, []);
 
   useEffect(() => {
     async function fetchData() {
@@ -88,6 +101,38 @@ export function TestHistory() {
 
       if (error) throw error;
 
+      // Fetch scheduled tests
+      const { data: scheduledTests, error: scheduledError } = await supabase
+        .from('scheduled_tests')
+        .select(`
+          id,
+          scheduled_date,
+          scheduled_time,
+          test_id,
+          mock_tests (
+            id,
+            title,
+            exam_type,
+            topic,
+            total_questions,
+            time_limit,
+            test_questions (
+              question_number,
+              question_text,
+              options,
+              correct_answer,
+              topic,
+              difficulty,
+              explanation
+            )
+          )
+        `)
+        .eq('user_id', uid)
+        .eq('status', 'scheduled')
+        .order('scheduled_date', { ascending: true });
+
+      let allTests: SavedTest[] = [];
+
       if (dbTests && dbTests.length > 0) {
         const formattedTests: SavedTest[] = dbTests.map(test => {
           // Extract original exam type from title (format: "ExamType - Topic")
@@ -107,22 +152,47 @@ export function TestHistory() {
               difficulty: q.difficulty
             })),
             duration: Math.floor((test.time_limit || 1800) / 60),
-            created_at: test.created_at
+            created_at: test.created_at,
+            is_scheduled: false
           };
         });
-        setSavedTests(formattedTests);
-        
-        // Update localStorage cache
-        const savedTestsKey = `saved_tests_${uid}`;
-        localStorage.setItem(savedTestsKey, JSON.stringify(formattedTests));
-      } else {
-        // Fallback to localStorage
-        const savedTestsKey = `saved_tests_${uid}`;
-        const existingTests = localStorage.getItem(savedTestsKey);
-        if (existingTests) {
-          setSavedTests(JSON.parse(existingTests));
-        }
+        allTests = [...formattedTests];
       }
+
+      // Add scheduled tests
+      if (scheduledTests && scheduledTests.length > 0) {
+        const formattedScheduledTests: SavedTest[] = scheduledTests.map((st: any) => {
+          const test = st.mock_tests;
+          const examTypeFromTitle = test.title.split(' - ')[0] || test.exam_type;
+          
+          return {
+            id: st.id,
+            name: test.title,
+            exam_type: examTypeFromTitle,
+            topic: test.topic || 'General',
+            questions: (test.test_questions || []).map((q: any) => ({
+              question: q.question_text,
+              options: q.options,
+              correctAnswer: q.correct_answer,
+              explanation: q.explanation,
+              topic: q.topic,
+              difficulty: q.difficulty
+            })),
+            duration: Math.floor((test.time_limit || 1800) / 60),
+            created_at: test.created_at || new Date().toISOString(),
+            scheduled_date: st.scheduled_date,
+            scheduled_time: st.scheduled_time,
+            is_scheduled: true
+          };
+        });
+        allTests = [...formattedScheduledTests, ...allTests];
+      }
+
+      setSavedTests(allTests);
+      
+      // Update localStorage cache
+      const savedTestsKey = `saved_tests_${uid}`;
+      localStorage.setItem(savedTestsKey, JSON.stringify(allTests));
     } catch (error) {
       console.error('Error fetching saved tests:', error);
       // Try localStorage as fallback
@@ -195,6 +265,28 @@ export function TestHistory() {
     });
   };
 
+  const getTimeUntilScheduled = (scheduledDate: string, scheduledTime: string) => {
+    const now = new Date();
+    const scheduled = new Date(`${scheduledDate}T${scheduledTime}`);
+    const diffMs = scheduled.getTime() - now.getTime();
+    
+    if (diffMs < 0) {
+      return { text: 'Available Now', isPast: true, canStart: true };
+    }
+    
+    const diffMinutes = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMinutes / 60);
+    const diffDays = Math.floor(diffHours / 24);
+    
+    if (diffDays > 0) {
+      return { text: `Available in ${diffDays}d ${diffHours % 24}h`, isPast: false, canStart: true };
+    }
+    if (diffHours > 0) {
+      return { text: `Available in ${diffHours}h ${diffMinutes % 60}m`, isPast: false, canStart: true };
+    }
+    return { text: `Available in ${diffMinutes}m`, isPast: false, canStart: true };
+  };
+
   return (
     <div className="p-4 md:p-6 lg:p-8 max-w-[1600px] mx-auto space-y-6">
       {/* Header */}
@@ -203,8 +295,8 @@ export function TestHistory() {
         animate={{ opacity: 1, y: 0 }}
         className="mb-8"
       >
-        <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-2">Test History</h1>
-        <p className="text-gray-600 dark:text-gray-400 text-base">View and manage your saved tests</p>
+        <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-2">Test Warehouse</h1>
+        <p className="text-gray-600 dark:text-gray-400 text-base">View and manage your saved tests and scheduled tests</p>
       </motion.div>
 
       {/* Stats Cards */}
@@ -327,7 +419,11 @@ export function TestHistory() {
                 <Card className="group h-full flex flex-col hover:shadow-lg transition-all duration-300 border border-gray-200 dark:border-gray-800 hover:border-[#030213] dark:hover:border-purple-500 overflow-hidden">
                   <CardContent className="p-0 flex flex-col h-full">
                     {/* Header */}
-                    <div className="p-4 bg-gradient-to-r from-gray-50 to-white dark:from-gray-900 dark:to-gray-800 border-b border-gray-100 dark:border-gray-800">
+                    <div className={`p-4 border-b border-gray-100 dark:border-gray-800 ${
+                      test.is_scheduled 
+                        ? 'bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30' 
+                        : 'bg-gradient-to-r from-gray-50 to-white dark:from-gray-900 dark:to-gray-800'
+                    }`}>
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex-1 min-w-0">
                           <h3 className="font-semibold text-gray-900 dark:text-white text-sm h-10 line-clamp-2 mb-1">
@@ -335,8 +431,30 @@ export function TestHistory() {
                           </h3>
                           <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
                             <Calendar className="h-3 w-3 shrink-0" />
-                            {formatDate(test.created_at)}
+                            {test.is_scheduled && test.scheduled_date 
+                              ? new Date(test.scheduled_date).toLocaleDateString('en-IN', { 
+                                  weekday: 'short', 
+                                  day: 'numeric', 
+                                  month: 'short',
+                                  year: 'numeric'
+                                })
+                              : formatDate(test.created_at)
+                            }
                           </div>
+                          {test.is_scheduled && test.scheduled_date && test.scheduled_time && (
+                            <div className="flex items-center gap-2 text-xs mt-1">
+                              <Clock className="h-3 w-3 shrink-0 text-blue-500" />
+                              <span className="font-medium text-blue-600 dark:text-blue-400">
+                                {(() => {
+                                  const [hours, minutes] = test.scheduled_time.split(':');
+                                  const hour = parseInt(hours);
+                                  const ampm = hour >= 12 ? 'PM' : 'AM';
+                                  const displayHour = hour % 12 || 12;
+                                  return `${displayHour}:${minutes} ${ampm}`;
+                                })()}
+                              </span>
+                            </div>
+                          )}
                         </div>
                         <button
                           onClick={(e) => handleDeleteClick(test.id, e)}
@@ -354,6 +472,12 @@ export function TestHistory() {
                           <Brain className="h-3 w-3" />
                           {test.exam_type}
                         </span>
+                        {test.is_scheduled && (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 h-fit bg-gradient-to-r from-blue-500 to-indigo-500 text-white text-xs font-medium rounded-full animate-pulse">
+                            <Calendar className="h-3 w-3" />
+                            Scheduled
+                          </span>
+                        )}
                         {test.name.includes('Weak Topics') && (
                           <span className="inline-flex items-center gap-1 px-2.5 py-1 h-fit bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs font-medium rounded-full">
                             <Target className="h-3 w-3" />
@@ -368,6 +492,17 @@ export function TestHistory() {
                           {test.duration} min
                         </span>
                       </div>
+                      
+                      {test.is_scheduled && test.scheduled_date && test.scheduled_time && (
+                        <div className="mt-3 p-2 rounded-lg bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-900">
+                          <p className="text-xs font-medium text-blue-700 dark:text-blue-300">
+                            ⏱️ {getTimeUntilScheduled(test.scheduled_date, test.scheduled_time).text}
+                          </p>
+                          <p className="text-[10px] text-blue-600 dark:text-blue-400 mt-0.5">
+                            You can start this test now or wait until scheduled time
+                          </p>
+                        </div>
+                      )}
                       
                       <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-1 mt-3">
                         <span className="font-medium">Topic:</span> {test.topic}
