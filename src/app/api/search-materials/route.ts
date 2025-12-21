@@ -221,7 +221,6 @@ export async function POST(request: NextRequest) {
 // GET endpoint for checking if semantic search is available
 export async function GET(request: NextRequest) {
   try {
-    const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {

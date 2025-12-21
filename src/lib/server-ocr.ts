@@ -63,19 +63,25 @@ export async function extractTextFromPDF(pdfBuffer: Buffer, language: string = '
     if (cleanedText.length < 200) {
       console.log('Low text yield from PDF - attempting OCR on scanned pages...');
       
-      // Dynamically import pdf-poppler (no TypeScript types available)
-      if (!pdfPoppler) {
-        pdfPoppler = await import('pdf-poppler');
-      }
-      
-      // Convert PDF to images and OCR each page
-      const opts = { 
-        format: 'png', 
-        out_dir: '/tmp', 
-        out_prefix: 'page', 
-        page: null  // All pages
-      };
-      const images = await pdfPoppler.convert(pdfBuffer, opts);
+      try {
+        // Dynamically import pdf-poppler (optional - no TypeScript types available)
+        if (!pdfPoppler) {
+          pdfPoppler = await import('pdf-poppler').catch(() => null);
+        }
+        
+        if (!pdfPoppler) {
+          console.warn('pdf-poppler not available, skipping advanced PDF OCR');
+          return { text: cleanedText, success: true, metadata: { method: 'pdf-parse' } };
+        }
+        
+        // Convert PDF to images and OCR each page
+        const opts = { 
+          format: 'png', 
+          out_dir: '/tmp', 
+          out_prefix: 'page', 
+          page: null  // All pages
+        };
+        const images = await pdfPoppler.convert(pdfBuffer, opts);
       
       let fullText = '';
       let avgConfidence = 0;
@@ -100,6 +106,10 @@ export async function extractTextFromPDF(pdfBuffer: Buffer, language: string = '
         method: 'pdf-ocr-multi-page',
         pageCount
       };
+      } catch (ocrError) {
+        console.warn('Advanced PDF OCR failed, using basic extraction:', ocrError);
+        return { text: cleanedText, success: true, metadata: { method: 'pdf-parse-fallback' } };
+      }
     }
     
     console.log(`✅ PDF parsed: ${data.numpages} pages, ${cleanedText.length} characters`);
