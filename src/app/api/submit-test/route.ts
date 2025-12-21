@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { calculateScore } from '@/lib/scoring'
-import { generateFeedback } from '@/lib/openai'
 
 export async function POST(request: NextRequest) {
   try {
@@ -30,12 +29,12 @@ export async function POST(request: NextRequest) {
 
     // Fetch test and questions
     const { data: test, error: testError } = await supabase
-      .from('tests')
+      .from('mock_tests')
       .select(`
         *,
-        questions (
+        test_questions (
           id,
-          question,
+          question_text,
           options,
           correct_answer,
           topic,
@@ -55,7 +54,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Convert questions to the format expected by calculateScore
-    const questions = test.questions.map((q: any) => ({
+    const questions = test.test_questions.map((q: any) => ({
       id: q.id,
       topic: q.topic,
       difficulty: q.difficulty,
@@ -66,41 +65,40 @@ export async function POST(request: NextRequest) {
     const result = calculateScore(answers, questions)
     result.timeTaken = timeTaken
 
-    // Create topic mapping for feedback
-    const topics: Record<string, string> = {}
-    questions.forEach((q: any) => {
-      topics[q.id] = q.topic
-    })
+    console.log('Score calculation:', { 
+      resultScore: result.score, 
+      totalQuestions: result.totalQuestions,
+      answersCount: Object.keys(answers).length 
+    });
 
     const correctAnswers: Record<string, string> = {}
     questions.forEach((q: any) => {
       correctAnswers[q.id] = q.correctAnswer
     })
 
-    // Generate AI feedback
-    let feedback = ''
-    try {
-      feedback = await generateFeedback(answers, correctAnswers, topics)
-    } catch (feedbackError) {
-      console.error('Error generating feedback:', feedbackError)
-      // Continue without feedback
-    }
+    // Calculate correct answers by comparing with normalized answers (just letter)
+    const correctCount = Object.entries(answers).filter(([questionId, userAnswer]) => {
+      const correctAnswer = correctAnswers[questionId];
+      // Extract just the letter from user's answer (e.g., "A) Some text" -> "A")
+      const userAnswerLetter = userAnswer?.trim().charAt(0).toUpperCase();
+      const correctAnswerLetter = correctAnswer?.trim().charAt(0).toUpperCase();
+      console.log('Comparing:', { questionId, userAnswerLetter, correctAnswerLetter, match: userAnswerLetter === correctAnswerLetter });
+      return userAnswerLetter === correctAnswerLetter;
+    }).length;
+
+    console.log('Correct answers count:', correctCount);
 
     // Save result to database
     const { data: resultRecord, error: resultError } = await supabase
-      .from('results')
+      .from('test_results')
       .insert({
         test_id: testId,
         user_id: user.id,
         score: result.score,
         total_questions: result.totalQuestions,
-        correct_answers: Object.entries(answers).filter(
-          ([questionId, answer]) => answer === correctAnswers[questionId]
-        ).length,
-        time_taken: timeTaken,
-        answers: answers,
-        analytics: result.analytics,
-        feedback: feedback
+        correct_answers: correctCount,
+        time_spent: timeTaken,
+        answers: answers
       })
       .select()
       .single()
@@ -113,18 +111,16 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Update test status to completed if this is the first attempt
-    const { data: existingResults } = await supabase
-      .from('results')
-      .select('id')
-      .eq('test_id', testId)
+    // Update test status to completed after successful result save
+    const { error: statusUpdateError } = await supabase
+      .from('mock_tests')
+      .update({ status: 'completed' })
+      .eq('id', testId)
       .eq('user_id', user.id)
 
-    if (existingResults && existingResults.length === 1) {
-      await supabase
-        .from('tests')
-        .update({ status: 'completed' })
-        .eq('id', testId)
+    if (statusUpdateError) {
+      console.error('Error updating test status:', statusUpdateError)
+      // Don't fail the request, result was saved successfully
     }
 
     // Prepare detailed response
@@ -136,11 +132,9 @@ export async function POST(request: NextRequest) {
         ([questionId, answer]) => answer === correctAnswers[questionId]
       ).length,
       timeTaken: timeTaken,
-      analytics: result.analytics,
-      feedback: feedback,
-      questions: test.questions.map((q: any) => ({
+      questions: test.test_questions.map((q: any) => ({
         id: q.id,
-        question: q.question,
+        question: q.question_text,
         options: q.options,
         correctAnswer: q.correct_answer,
         userAnswer: answers[q.id] || null,
