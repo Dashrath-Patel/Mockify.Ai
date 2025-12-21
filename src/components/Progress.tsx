@@ -253,47 +253,6 @@ export function Progress() {
             </Card>
         </motion.div>
       </div>
-
-      {/* AI Recommendations */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.6 }}
-        className="group cursor-pointer"
-        whileHover={{ 
-          y: -4,
-          transition: { duration: 0.2 }
-        }}
-      >
-        <Card className="rounded-2xl bg-gradient-to-br from-amber-400 via-orange-400 to-rose-400 dark:from-amber-500/30 dark:via-orange-500/30 dark:to-rose-500/30 border-[3px] border-black dark:border-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] group-hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] dark:group-hover:shadow-[6px_6px_0px_0px_rgba(255,255,255,1)] transition-all duration-200 overflow-hidden">
-          <CardHeader>
-            <CardTitle className="text-black dark:text-white flex items-center gap-2 font-bold">
-              <Sparkles className="h-5 w-5 text-black dark:text-white" />
-              AI Recommendations
-            </CardTitle>
-          </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex items-start gap-3 p-3 bg-white dark:bg-[#2a2a2a] rounded-xl border-2 border-black dark:border-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,0.3)]">
-                <Badge className="bg-gradient-to-r from-emerald-400 to-teal-500 border-2 border-black dark:border-white text-white mt-1 font-bold shadow-lg">Strength</Badge>
-                <p className="text-sm text-black dark:text-white font-medium">
-                  Excellent progress in <strong className="text-black dark:text-white">Science & Technology</strong>! You're performing 15% above average.
-                </p>
-              </div>
-              <div className="flex items-start gap-3 p-3 bg-white dark:bg-[#2a2a2a] rounded-xl border-2 border-black dark:border-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,0.3)]">
-                <Badge className="bg-gradient-to-r from-violet-400 to-purple-500 border-2 border-black dark:border-white text-white mt-1 font-bold shadow-lg">Focus</Badge>
-                <p className="text-sm text-black dark:text-white font-medium">
-                  Spend more time on <strong className="text-black dark:text-white">Polity</strong> - it needs attention. Try taking 2-3 topic tests this week.
-                </p>
-              </div>
-              <div className="flex items-start gap-3 p-3 bg-white dark:bg-[#2a2a2a] rounded-xl border-2 border-black dark:border-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,0.3)]">
-                <Badge className="bg-gradient-to-r from-amber-400 to-orange-500 border-2 border-black dark:border-white text-white mt-1 font-bold shadow-lg">Insight</Badge>
-                <p className="text-sm text-black dark:text-white font-medium">
-                  Your accuracy is improving consistently. Maintain this momentum for optimal results!
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-      </motion.div>
     </div>
   );
 }
