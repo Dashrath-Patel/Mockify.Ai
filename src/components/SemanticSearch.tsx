@@ -11,6 +11,7 @@ interface SearchResult {
   file_url: string;
   similarity: number;
   similarityPercent: number;
+  created_at?: string;
   matchedChunks: Array<{
     text: string;
     similarity: number;
@@ -254,7 +255,7 @@ export default function SemanticSearch() {
                 <div className="flex-1">
                   <h4 className="font-bold text-lg">{result.topic}</h4>
                   <p className="text-sm text-gray-500">
-                    Uploaded {new Date(result.created_at).toLocaleDateString()}
+                    {result.created_at ? `Uploaded ${new Date(result.created_at).toLocaleDateString()}` : 'Material'}
                   </p>
                 </div>
                 
