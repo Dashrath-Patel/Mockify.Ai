@@ -299,33 +299,7 @@ export function MockTestInterface({
 
   // Validate before opening submit dialog
   const handleSubmitClick = () => {
-    const incomplete = findFirstIncompleteQuestion();
-    
-    if (incomplete.type === 'unanswered') {
-      toast.error(
-        `You have ${statusCounts.notAnswered + statusCounts.notVisited} unanswered question(s). Please answer all questions before submitting.`,
-        {
-          icon: <AlertCircle className="h-5 w-5 text-red-500" />,
-          duration: 4000,
-        }
-      );
-      goToQuestion(incomplete.index);
-      return;
-    }
-    
-    if (incomplete.type === 'marked') {
-      toast.warning(
-        `You have ${statusCounts.markedForReview} question(s) marked for review. Please review them before submitting.`,
-        {
-          icon: <Flag className="h-5 w-5 text-purple-500" />,
-          duration: 4000,
-        }
-      );
-      goToQuestion(incomplete.index);
-      return;
-    }
-    
-    // All questions answered and not marked - show submit dialog
+    // Always allow submission - just show submit dialog with summary
     setShowSubmitDialog(true);
   };
 
@@ -670,22 +644,28 @@ export function MockTestInterface({
               <span className="font-semibold text-green-600">{statusCounts.answered}</span>
             </div>
             <div className="flex justify-between items-center text-sm">
-              <span className="text-gray-600 dark:text-gray-400">Not Answered:</span>
-              <span className="font-semibold text-red-600">{statusCounts.notAnswered}</span>
+              <span className="text-gray-600 dark:text-gray-400">Skipped / Not Answered:</span>
+              <span className="font-semibold text-red-600">{statusCounts.notAnswered + statusCounts.notVisited}</span>
             </div>
             <div className="flex justify-between items-center text-sm">
               <span className="text-gray-600 dark:text-gray-400">Marked for Review:</span>
               <span className="font-semibold text-purple-600">{statusCounts.markedForReview}</span>
             </div>
-            <div className="flex justify-between items-center text-sm">
-              <span className="text-gray-600 dark:text-gray-400">Not Visited:</span>
-              <span className="font-semibold text-gray-600">{statusCounts.notVisited}</span>
-            </div>
+            
+            {/* Warning for skipped questions */}
+            {(statusCounts.notAnswered + statusCounts.notVisited > 0) && (
+              <div className="mt-4 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-lg">
+                <p className="text-sm text-amber-800 dark:text-amber-200 flex items-center gap-2">
+                  <AlertCircle className="h-4 w-4" />
+                  You have {statusCounts.notAnswered + statusCounts.notVisited} skipped question(s). Skipped questions will be marked as incorrect.
+                </p>
+              </div>
+            )}
           </div>
 
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowSubmitDialog(false)}>
-              Cancel
+              Continue Test
             </Button>
             <Button 
               onClick={handleSubmit}
