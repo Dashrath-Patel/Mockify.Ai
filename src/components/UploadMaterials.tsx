@@ -36,7 +36,6 @@ export function UploadMaterials() {
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterTopic, setFilterTopic] = useState('all');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [selectedTopic, setSelectedTopic] = useState('');
   const [materialType, setMaterialType] = useState<string>('notes');
@@ -489,8 +488,7 @@ export function UploadMaterials() {
 
   const filteredMaterials = materials.filter(material => {
     const matchesSearch = material.name.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesTopic = filterTopic === 'all' || material.topic === filterTopic;
-    return matchesSearch && matchesTopic;
+    return matchesSearch;
   });
 
   return (
@@ -605,7 +603,7 @@ export function UploadMaterials() {
           </div>
           {materials.length > 0 && (
             <Link href="/dashboard/tests">
-              <Button className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2">
+              <Button className="bg-gradient-to-r from-orange-500 via-pink-500 to-purple-600 hover:from-orange-600 hover:via-pink-600 hover:to-purple-700 text-white font-semibold px-6 py-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 flex items-center gap-2 border border-white/20">
                 <Brain className="h-5 w-5" />
                 Generate Test
                 <ArrowRight className="h-4 w-4" />
@@ -792,19 +790,7 @@ export function UploadMaterials() {
                     className="pl-10 rounded-xl bg-white dark:bg-[#2a2a2a] border-2 border-black dark:border-white text-black dark:text-white placeholder:text-[#555555] dark:placeholder:text-gray-400 font-medium shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,0.3)]"
                   />
                 </div>
-                <Select value={filterTopic} onValueChange={setFilterTopic}>
-                  <SelectTrigger className="w-full md:w-48 rounded-xl bg-white dark:bg-[#2a2a2a] border-2 border-black dark:border-white text-black dark:text-white font-medium shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,0.3)]">
-                    <SelectValue placeholder="Filter by Topic" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-white dark:bg-[#2a2a2a] border-2 border-black dark:border-white rounded-xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]">
-                    <SelectItem value="all" className="font-medium">All Topics</SelectItem>
-                    <SelectItem value="History" className="font-medium">History</SelectItem>
-                    <SelectItem value="Geography" className="font-medium">Geography</SelectItem>
-                    <SelectItem value="Polity" className="font-medium">Polity</SelectItem>
-                    <SelectItem value="Economy" className="font-medium">Economy</SelectItem>
-                    <SelectItem value="Science" className="font-medium">Science</SelectItem>
-                  </SelectContent>
-                </Select>
+
               </div>
 
               {/* Materials Table */}
@@ -821,7 +807,6 @@ export function UploadMaterials() {
                     <TableHeader>
                       <TableRow className="border-black dark:border-white">
                         <TableHead className="text-black dark:text-white font-bold">File Name</TableHead>
-                        <TableHead className="text-black dark:text-white font-bold">Topic</TableHead>
                         <TableHead className="text-black dark:text-white font-bold">Type</TableHead>
                         <TableHead className="text-black dark:text-white font-bold">Date Uploaded</TableHead>
                         <TableHead className="text-right text-black dark:text-white font-bold">Actions</TableHead>
@@ -846,11 +831,6 @@ export function UploadMaterials() {
                                 </span>
                               )}
                             </div>
-                          </TableCell>
-                          <TableCell>
-                            <span className={`px-2.5 py-1 rounded-lg text-sm font-bold border-2 border-black dark:border-white shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] dark:shadow-[1px_1px_0px_0px_rgba(255,255,255,0.3)] ${getTopicColors(material.topic).light} ${getTopicColors(material.topic).dark}`}>
-                              {material.topic}
-                            </span>
                           </TableCell>
                           <TableCell className="text-black dark:text-white font-medium">{material.type}</TableCell>
                           <TableCell className="text-[#555555] dark:text-gray-400 font-medium">{material.date}</TableCell>
