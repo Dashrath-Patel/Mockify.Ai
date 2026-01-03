@@ -238,6 +238,37 @@ export function MockTestInterface({
     }
   };
 
+  // Skip question - move to next without saving
+  const handleSkipQuestion = () => {
+    // Keep status as not-answered if not already answered
+    if (!answers[currentQuestion]) {
+      setQuestionStatus(prev => ({ ...prev, [currentQuestion]: 'not-answered' }));
+    }
+    
+    // Clear selected answer for current question
+    setSelectedAnswer('');
+    
+    // Move to next question
+    if (currentQuestion < questions.length - 1) {
+      goToQuestion(currentQuestion + 1);
+      toast.info('Question skipped. You can come back to it later.', { 
+        duration: 1500,
+        icon: <SkipForward className="h-5 w-5 text-gray-500" />,
+      });
+    } else {
+      // If on last question, go to first unanswered
+      const firstUnanswered = Object.entries(questionStatus).find(
+        ([_, status]) => status === 'not-answered' || status === 'not-visited'
+      );
+      if (firstUnanswered) {
+        goToQuestion(parseInt(firstUnanswered[0]));
+        toast.info('Last question! Jumping to first unanswered.', { duration: 1500 });
+      } else {
+        toast.info('This is the last question.', { duration: 1500 });
+      }
+    }
+  };
+
   // Submit test
   const handleSubmit = () => {
     const timeSpent = (duration * 60 - timeLeft);
@@ -491,14 +522,24 @@ export function MockTestInterface({
             <Card className="border-2 border-gray-200 dark:border-slate-800">
               <CardContent className="py-4">
                 <div className="flex items-center justify-between gap-4">
-                  <Button
-                    variant="outline"
-                    onClick={handleMarkForReview}
-                    className="flex items-center gap-2"
-                  >
-                    <Flag className="h-4 w-4" />
-                    Mark for Review & Next
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      onClick={handleMarkForReview}
+                      className="flex items-center gap-2"
+                    >
+                      <Flag className="h-4 w-4" />
+                      Mark for Review
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={handleSkipQuestion}
+                      className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+                    >
+                      <SkipForward className="h-4 w-4" />
+                      Skip
+                    </Button>
+                  </div>
                   
                   <div className="flex items-center gap-3">
                     <Button
