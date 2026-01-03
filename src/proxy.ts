@@ -1,6 +1,9 @@
 /**
- * Middleware for Authentication, Security, and Performance
+ * Proxy for Authentication, Security, and Performance
  * Handles auth checks, security headers, rate limiting, and analytics
+ * 
+ * Note: Renamed from middleware to proxy as per Next.js 16 convention
+ * See: https://nextjs.org/docs/messages/middleware-to-proxy
  */
 
 import { NextResponse } from 'next/server';
@@ -13,7 +16,7 @@ const publicRoutes = ['/', '/login', '/signup', '/api/health', '/auth/callback']
 // API routes that need rate limiting
 const apiRoutes = ['/api/generate-questions', '/api/upload'];
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   
   // Create response
