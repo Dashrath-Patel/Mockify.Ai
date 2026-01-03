@@ -582,7 +582,7 @@ export function MockTests() {
     setCurrentScreen('results');
 
     // Save test results to database for analytics
-    if (userId && questions.length > 0) {
+    if (userId && questions.length > 0 && currentTestId) {
       try {
         // Calculate topic-wise performance
         const topicStats: Record<string, { correct: number; total: number }> = {};
@@ -640,17 +640,23 @@ export function MockTests() {
         };
 
         // Convert answers from index-based to ID-based for the API
-        console.log('Converting answers:', { answers, questionsCount: questions.length });
+        // Only include answered questions, skip empty/undefined answers
         const answersById: Record<string, string> = {};
         Object.entries(answers).forEach(([index, answer]) => {
+          if (!answer) return; // Skip unanswered questions
           const questionIndex = parseInt(index);
           const question = questions[questionIndex];
-          console.log(`Question ${index}:`, { questionIndex, hasQuestion: !!question, questionId: question?.id, answer });
           if (question && question.id) {
             answersById[question.id] = answer;
           }
         });
-        console.log('Converted answersById:', answersById);
+        
+        console.log('Submitting test:', { 
+          testId: currentTestId, 
+          answeredCount: Object.keys(answersById).length,
+          totalQuestions: questions.length,
+          timeTaken 
+        });
 
         // Save test results to test_results table via submit-test API
         const response = await fetch('/api/submit-test', {
@@ -674,6 +680,8 @@ export function MockTests() {
         console.error('Failed to save test results:', error);
         // Don't block the UI, just log the error
       }
+    } else if (!currentTestId) {
+      console.warn('Test ID not available, skipping database save. Results will still be shown.');
     }
   };
 

@@ -19,13 +19,16 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { testId, answers, timeTaken } = body
 
-    // Validate required fields
-    if (!testId || !answers || typeof timeTaken !== 'number') {
+    // Validate required fields - answers can be empty object if all questions skipped
+    if (!testId || answers === undefined || answers === null || typeof timeTaken !== 'number') {
       return NextResponse.json(
         { error: 'Test ID, answers, and time taken are required' },
         { status: 400 }
       )
     }
+
+    // Ensure answers is an object (can be empty)
+    const validAnswers = typeof answers === 'object' ? answers : {};
 
     // Fetch test and questions
     const { data: test, error: testError } = await supabase
@@ -62,13 +65,13 @@ export async function POST(request: NextRequest) {
     }))
 
     // Calculate score and analytics
-    const result = calculateScore(answers, questions)
+    const result = calculateScore(validAnswers, questions)
     result.timeTaken = timeTaken
 
     console.log('Score calculation:', { 
       resultScore: result.score, 
       totalQuestions: result.totalQuestions,
-      answersCount: Object.keys(answers).length 
+      answersCount: Object.keys(validAnswers).length 
     });
 
     const correctAnswers: Record<string, string> = {}
@@ -77,7 +80,7 @@ export async function POST(request: NextRequest) {
     })
 
     // Calculate correct answers by comparing with normalized answers (just letter)
-    const correctCount = Object.entries(answers).filter(([questionId, userAnswer]) => {
+    const correctCount = Object.entries(validAnswers).filter(([questionId, userAnswer]) => {
       const correctAnswer = correctAnswers[questionId];
       // Extract just the letter from user's answer (e.g., "A) Some text" -> "A")
       const userAnswerStr = String(userAnswer || '');
@@ -99,7 +102,7 @@ export async function POST(request: NextRequest) {
         total_questions: result.totalQuestions,
         correct_answers: correctCount,
         time_spent: timeTaken,
-        answers: answers
+        answers: validAnswers
       })
       .select()
       .single()
@@ -129,7 +132,7 @@ export async function POST(request: NextRequest) {
       resultId: resultRecord.id,
       score: result.score,
       totalQuestions: result.totalQuestions,
-      correctAnswers: Object.entries(answers).filter(
+      correctAnswers: Object.entries(validAnswers).filter(
         ([questionId, answer]) => answer === correctAnswers[questionId]
       ).length,
       timeTaken: timeTaken,
@@ -138,8 +141,8 @@ export async function POST(request: NextRequest) {
         question: q.question_text,
         options: q.options,
         correctAnswer: q.correct_answer,
-        userAnswer: answers[q.id] || null,
-        isCorrect: answers[q.id] === q.correct_answer,
+        userAnswer: validAnswers[q.id] || null,
+        isCorrect: validAnswers[q.id] === q.correct_answer,
         topic: q.topic,
         difficulty: q.difficulty
       }))
