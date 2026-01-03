@@ -604,7 +604,7 @@ export function UploadMaterials() {
             <p className="text-gray-600 dark:text-gray-400 text-base">Upload and organize your study materials for AI-powered test generation</p>
           </div>
           {materials.length > 0 && (
-            <Link href="/generate">
+            <Link href="/dashboard/tests">
               <Button className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2">
                 <Brain className="h-5 w-5" />
                 Generate Test
