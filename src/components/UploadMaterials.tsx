@@ -6,9 +6,10 @@ import { Input } from './ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from './ui/alert-dialog';
-import { Upload, FileText, Trash2, Eye, Search, Sparkles, X, CloudUpload } from 'lucide-react';
+import { Upload, FileText, Trash2, Eye, Search, Sparkles, X, CloudUpload, Brain, ArrowRight } from 'lucide-react';
 import { toast } from 'sonner';
 import { createClient } from '@/lib/supabase';
+import Link from 'next/link';
 
 interface Material {
   id: string;
@@ -597,8 +598,21 @@ export function UploadMaterials() {
           animate={{ opacity: 1, y: 0 }}
           className="mb-8"
         >
-        <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-2">Upload Study Materials</h1>
-        <p className="text-gray-600 dark:text-gray-400 text-base">Upload and organize your study materials for AI-powered test generation</p>
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-2">Upload Study Materials</h1>
+            <p className="text-gray-600 dark:text-gray-400 text-base">Upload and organize your study materials for AI-powered test generation</p>
+          </div>
+          {materials.length > 0 && (
+            <Link href="/generate">
+              <Button className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2">
+                <Brain className="h-5 w-5" />
+                Generate Test
+                <ArrowRight className="h-4 w-4" />
+              </Button>
+            </Link>
+          )}
+        </div>
         
         {/* Prompt for onboarding if not completed */}
         {!loadingPrefs && userPrefs && !userPrefs.onboarding_completed && (

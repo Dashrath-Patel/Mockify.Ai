@@ -209,7 +209,7 @@ export default function GenerateTestPage() {
     <div className="min-h-screen bg-[#F9F6F2]">
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
           <div className="flex items-center space-x-4">
             <Link href="/dashboard">
               <Button variant="outline" size="sm">
@@ -222,6 +222,12 @@ export default function GenerateTestPage() {
               <p className="text-gray-600">Create AI-powered tests from your study materials</p>
             </div>
           </div>
+          <Link href="/upload-materials">
+            <Button variant="outline" className="border-2 border-purple-600 text-purple-600 hover:bg-purple-50 font-semibold px-4 py-2 rounded-xl flex items-center gap-2">
+              <Upload className="h-4 w-4" />
+              Upload Materials
+            </Button>
+          </Link>
         </div>
 
         {isGenerating ? (
