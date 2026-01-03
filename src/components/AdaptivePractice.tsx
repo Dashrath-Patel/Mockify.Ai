@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
@@ -66,10 +66,120 @@ export function AdaptivePractice({
   const messageIdCounter = useRef(0);
 
   // Generate unique message ID
-  const generateMessageId = () => {
+  const generateMessageId = useCallback(() => {
     messageIdCounter.current += 1;
     return `msg-${Date.now()}-${messageIdCounter.current}`;
-  };
+  }, []);
+
+  const addBotMessage = useCallback((content: string, delay: number = 500): Promise<void> => {
+    return new Promise((resolve) => {
+      setIsTyping(true);
+      setTimeout(() => {
+        setIsTyping(false);
+        setMessages(prev => [...prev, {
+          id: `msg-${Date.now()}-${++messageIdCounter.current}`,
+          type: 'bot',
+          content
+        }]);
+        resolve();
+      }, delay);
+    });
+  }, []);
+
+  const addTopicsMessage = useCallback((topics: WeakTopic[]): void => {
+    setMessages(prev => [...prev, {
+      id: `msg-${Date.now()}-${++messageIdCounter.current}`,
+      type: 'topics',
+      content: '',
+      topics
+    }]);
+  }, []);
+
+  const addOptionsMessage = useCallback((options: string[]): void => {
+    setMessages(prev => [...prev, {
+      id: `msg-${Date.now()}-${++messageIdCounter.current}`,
+      type: 'options',
+      content: '',
+      options
+    }]);
+  }, []);
+
+  const addUserMessage = useCallback((content: string): void => {
+    setMessages(prev => [...prev, {
+      id: `msg-${Date.now()}-${++messageIdCounter.current}`,
+      type: 'user',
+      content
+    }]);
+  }, []);
+
+  const startConversation = useCallback(async () => {
+    // Show initial message immediately
+    setIsTyping(true);
+    setTimeout(() => {
+      setIsTyping(false);
+      setMessages(prev => [...prev, {
+        id: `msg-${Date.now()}-${++messageIdCounter.current}`,
+        type: 'bot',
+        content: "👋 Hey! I'm your AI Practice Assistant. Let me analyze your test history..."
+      }]);
+    }, 100);
+    
+    // Fetch weak topics
+    try {
+      const response = await fetch(`/api/adaptive-practice?userId=${userId}&examType=${examType}`);
+      const data = await response.json();
+      
+      if (data.weakTopics && data.weakTopics.length > 0) {
+        setWeakTopics(data.weakTopics);
+        
+        setTimeout(() => {
+          setMessages(prev => [...prev, {
+            id: `msg-${Date.now()}-${++messageIdCounter.current}`,
+            type: 'bot',
+            content: `I found **${data.weakTopics.length} topics** where you need more practice! 📊`
+          }]);
+          
+          setTimeout(() => {
+            setMessages(prev => [...prev, {
+              id: `msg-${Date.now()}-${++messageIdCounter.current}`,
+              type: 'bot',
+              content: "Select the topics you want to focus on:"
+            }]);
+            setCurrentStep('topics');
+            setMessages(prev => [...prev, {
+              id: `msg-${Date.now()}-${++messageIdCounter.current}`,
+              type: 'topics',
+              content: '',
+              topics: data.weakTopics
+            }]);
+          }, 300);
+        }, 500);
+      } else {
+        setTimeout(() => {
+          setMessages(prev => [...prev, {
+            id: `msg-${Date.now()}-${++messageIdCounter.current}`,
+            type: 'bot',
+            content: "Great news! 🎉 I couldn't find any weak topics. You're doing amazing!"
+          }]);
+          setTimeout(() => {
+            setMessages(prev => [...prev, {
+              id: `msg-${Date.now()}-${++messageIdCounter.current}`,
+              type: 'bot',
+              content: "Keep practicing to maintain your progress!"
+            }]);
+          }, 300);
+        }, 400);
+      }
+    } catch {
+      setTimeout(() => {
+        setMessages(prev => [...prev, {
+          id: `msg-${Date.now()}-${++messageIdCounter.current}`,
+          type: 'bot',
+          content: "Oops! I had trouble analyzing your history. Please try again later."
+        }]);
+      }, 300);
+    }
+  }, [userId, examType]);
 
   // Auto-scroll to bottom
   useEffect(() => {
@@ -93,72 +203,7 @@ export function AdaptivePractice({
       // Start conversation with minimal delay
       startConversation();
     }
-  }, [open]);
-
-  const addBotMessage = (content: string, delay: number = 500): Promise<void> => {
-    return new Promise((resolve) => {
-      setIsTyping(true);
-      setTimeout(() => {
-        setIsTyping(false);
-        setMessages(prev => [...prev, {
-          id: generateMessageId(),
-          type: 'bot',
-          content
-        }]);
-        resolve();
-      }, delay);
-    });
-  };
-
-  const addTopicsMessage = (topics: WeakTopic[]): void => {
-    setMessages(prev => [...prev, {
-      id: generateMessageId(),
-      type: 'topics',
-      content: '',
-      topics
-    }]);
-  };
-
-  const addOptionsMessage = (options: string[]): void => {
-    setMessages(prev => [...prev, {
-      id: generateMessageId(),
-      type: 'options',
-      content: '',
-      options
-    }]);
-  };
-
-  const addUserMessage = (content: string): void => {
-    setMessages(prev => [...prev, {
-      id: generateMessageId(),
-      type: 'user',
-      content
-    }]);
-  };
-
-  const startConversation = async () => {
-    // Show initial message immediately
-    await addBotMessage("👋 Hey! I'm your AI Practice Assistant. Let me analyze your test history...", 100);
-    
-    // Fetch weak topics
-    try {
-      const response = await fetch(`/api/adaptive-practice?userId=${userId}&examType=${examType}`);
-      const data = await response.json();
-      
-      if (data.weakTopics && data.weakTopics.length > 0) {
-        setWeakTopics(data.weakTopics);
-        await addBotMessage(`I found **${data.weakTopics.length} topics** where you need more practice! 📊`, 400);
-        await addBotMessage("Select the topics you want to focus on:", 300);
-        setCurrentStep('topics');
-        addTopicsMessage(data.weakTopics);
-      } else {
-        await addBotMessage("Great news! 🎉 I couldn't find any weak topics. You're doing amazing!", 400);
-        await addBotMessage("Keep practicing to maintain your progress!", 300);
-      }
-    } catch (error) {
-      await addBotMessage("Oops! I had trouble analyzing your history. Please try again later.", 300);
-    }
-  };
+  }, [open, startConversation]);
 
   const handleTopicSelect = (topic: string) => {
     setSelectedTopics(prev => 

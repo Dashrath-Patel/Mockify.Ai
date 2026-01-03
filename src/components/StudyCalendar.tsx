@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ChevronLeft, ChevronRight, CheckCircle2, Calendar as CalendarIcon, Clock } from 'lucide-react';
 import { Button } from './ui/button';
@@ -31,7 +31,7 @@ export function StudyCalendar() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [calendarData, setCalendarData] = useState<Map<string, DayData>>(new Map());
   const [isLoading, setIsLoading] = useState(true);
-  const supabase = createClient();
+  const supabase = useMemo(() => createClient(), []);
 
   // Fetch calendar data for the current month
   useEffect(() => {

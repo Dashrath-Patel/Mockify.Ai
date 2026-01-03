@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useEffect } from 'react';
+import { useState, useRef, useCallback, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
@@ -52,7 +52,7 @@ export function UploadMaterials() {
   const [materialToDelete, setMaterialToDelete] = useState<string | null>(null);
   const [deletingMaterials, setDeletingMaterials] = useState<Set<string>>(new Set());
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const supabase = createClient();
+  const supabase = useMemo(() => createClient(), []);
 
   // Fetch user preferences and existing materials
   useEffect(() => {

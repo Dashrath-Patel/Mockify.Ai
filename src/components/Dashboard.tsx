@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion } from "motion/react";
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
@@ -141,7 +141,7 @@ export function Dashboard() {
     { goal: 'Review 10 Topics', current: 0, total: 10, color: 'emerald' },
   ]);
   
-  const supabase = createClient();
+  const supabase = useMemo(() => createClient(), []);
 
   // Fetch dashboard stats (tests completed, average score, study time, rank)
   const fetchDashboardStats = useCallback(async (currentUserId: string) => {
