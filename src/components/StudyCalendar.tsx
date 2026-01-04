@@ -162,40 +162,40 @@ export function StudyCalendar() {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-2 sm:space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <CalendarIcon className="h-5 w-5 text-violet-600 dark:text-violet-400" />
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          <CalendarIcon className="h-4 w-4 sm:h-5 sm:w-5 text-violet-600 dark:text-violet-400" />
+          <h3 className="text-sm sm:text-lg font-semibold text-gray-900 dark:text-white">
             {months[currentDate.getMonth()]} {currentDate.getFullYear()}
           </h3>
         </div>
-        <div className="flex gap-1">
+        <div className="flex gap-0.5 sm:gap-1">
           <Button
             variant="ghost"
             size="icon"
             onClick={prevMonth}
-            className="h-8 w-8 text-gray-600 dark:text-gray-400 hover:text-violet-600 dark:hover:text-white hover:bg-violet-50 dark:hover:bg-slate-800 transition-colors"
+            className="h-6 w-6 sm:h-8 sm:w-8 text-gray-600 dark:text-gray-400 hover:text-violet-600 dark:hover:text-white hover:bg-violet-50 dark:hover:bg-slate-800 transition-colors"
           >
-            <ChevronLeft className="h-4 w-4" />
+            <ChevronLeft className="h-3 w-3 sm:h-4 sm:w-4" />
           </Button>
           <Button
             variant="ghost"
             size="icon"
             onClick={nextMonth}
-            className="h-8 w-8 text-gray-600 dark:text-gray-400 hover:text-violet-600 dark:hover:text-white hover:bg-violet-50 dark:hover:bg-slate-800 transition-colors"
+            className="h-6 w-6 sm:h-8 sm:w-8 text-gray-600 dark:text-gray-400 hover:text-violet-600 dark:hover:text-white hover:bg-violet-50 dark:hover:bg-slate-800 transition-colors"
           >
-            <ChevronRight className="h-4 w-4" />
+            <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4" />
           </Button>
         </div>
       </div>
 
       {/* Days of week */}
-      <div className="grid grid-cols-7 gap-1 md:gap-2">
+      <div className="grid grid-cols-7 gap-0.5 sm:gap-1 md:gap-2">
         {daysOfWeek.map((day) => (
-          <div key={day} className="text-center text-xs font-semibold text-gray-500 dark:text-gray-500 py-2">
-            {day}
+          <div key={day} className="text-center text-[10px] sm:text-xs font-semibold text-gray-500 dark:text-gray-500 py-1 sm:py-2">
+            {day.slice(0, 1)}<span className="hidden sm:inline">{day.slice(1)}</span>
           </div>
         ))}
       </div>
@@ -208,7 +208,7 @@ export function StudyCalendar() {
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: -20 }}
           transition={{ duration: 0.2 }}
-          className="grid grid-cols-7 gap-1 md:gap-2"
+          className="grid grid-cols-7 gap-0.5 sm:gap-1 md:gap-2"
         >
           {days.map((day, index) => {
             const isToday = day.isToday;
@@ -217,29 +217,29 @@ export function StudyCalendar() {
               <motion.div
                 key={`${index}-${day.date}`}
                 className={`
-                  aspect-square p-1 rounded-xl text-sm relative transition-all font-bold min-h-[65px] flex flex-col
+                  aspect-square p-0.5 sm:p-1 rounded-lg sm:rounded-xl text-xs sm:text-sm relative transition-all font-bold min-h-[40px] sm:min-h-[65px] flex flex-col
                   ${!day.isCurrentMonth 
                     ? 'text-gray-300 dark:text-gray-700 opacity-40' 
                     : ''}
                   ${isToday
-                    ? 'bg-yellow-400 dark:bg-yellow-400 text-black ring-2 ring-yellow-500 dark:ring-yellow-500'
+                    ? 'bg-yellow-400 dark:bg-yellow-400 text-black ring-1 sm:ring-2 ring-yellow-500 dark:ring-yellow-500'
                     : 'text-gray-700 dark:text-gray-300'}
                 `}
               >
                 {/* Date number */}
-                <div className="text-center mb-auto pt-1">
-                  <span className="text-base font-bold">{day.date}</span>
+                <div className="text-center mb-auto pt-0.5 sm:pt-1">
+                  <span className="text-xs sm:text-base font-bold">{day.date}</span>
                 </div>
                 
                 {/* Indicators container - Horizontal Layout */}
-                <div className="flex items-center justify-center gap-1 pb-1 flex-wrap">
+                <div className="flex items-center justify-center gap-0.5 pb-0.5 sm:pb-1 flex-wrap">
                   {/* Scheduled Test Count - Only show if count > 0 */}
                   {day.scheduledCount && day.scheduledCount > 0 && (
                     <motion.div
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
                       title={`${day.scheduledCount} Test${day.scheduledCount > 1 ? 's' : ''} Scheduled`}
-                      className="px-1.5 py-0.5 rounded text-xs font-bold bg-blue-500 text-white"
+                      className="px-1 py-0.5 rounded text-[8px] sm:text-xs font-bold bg-blue-500 text-white"
                     >
                       {day.scheduledCount}
                     </motion.div>
@@ -251,19 +251,19 @@ export function StudyCalendar() {
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
                       title="Test Completed"
-                      className="p-0.5 rounded bg-green-500 dark:bg-green-600"
+                      className="p-0.5 rounded bg-green-500 dark:bg-green-600 hidden sm:block"
                     >
-                      <CheckCircle2 className="h-3 w-3 text-black" />
+                      <CheckCircle2 className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-black" />
                     </motion.div>
                   )}
                   
-                  {/* Study Time */}
+                  {/* Study Time - Hidden on mobile, too small */}
                   {day.studyMinutes && day.studyMinutes > 0 && (
                     <motion.div
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
                       title={`Study Time: ${day.studyMinutes} minutes`}
-                      className="flex items-center gap-0.5 px-1 py-0.5 rounded text-[9px] font-bold bg-amber-500 dark:bg-amber-600 text-black"
+                      className="hidden sm:flex items-center gap-0.5 px-1 py-0.5 rounded text-[9px] font-bold bg-amber-500 dark:bg-amber-600 text-black"
                     >
                       <Clock className="h-2.5 w-2.5" />
                       <span>{day.studyMinutes}</span>
@@ -276,8 +276,8 @@ export function StudyCalendar() {
         </motion.div>
       </AnimatePresence>
 
-      {/* Legend */}
-      <div className="flex flex-wrap gap-4 text-xs pt-3 border-t border-gray-200 dark:border-slate-700">
+      {/* Legend - Hidden on mobile */}
+      <div className="hidden sm:flex flex-wrap gap-4 text-xs pt-3 border-t border-gray-200 dark:border-slate-700">
         <div className="flex items-center gap-2">
           <div className="px-1.5 py-0.5 rounded bg-blue-500 text-white text-xs font-bold">
             2
