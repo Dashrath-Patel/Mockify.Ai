@@ -185,7 +185,8 @@ export function TestResultsScreen({
   const topicAnalysis = getTopicAnalysis();
 
   return (
-    <div className="min-h-screen bg-[#F9F6F2] dark:bg-[#0a0a0a] pb-20 sm:pb-0\">\n      {/* Header */}
+    <div className="min-h-screen bg-[#F9F6F2] dark:bg-[#0a0a0a] pb-20 sm:pb-0">
+      {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -227,8 +228,8 @@ export function TestResultsScreen({
       </motion.div>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8\">
-        <div className=\"grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6\">"
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
           {/* Score Card - Large */}
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}

@@ -417,7 +417,7 @@ export function MockTestInterface({
       <div className="max-w-[1920px] mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6">
         <div className="flex flex-col xl:grid xl:grid-cols-4 gap-4 sm:gap-6">
           {/* Left Column - Question */}
-          <div className="xl:col-span-3 space-y-3 sm:space-y-4 order-1">
+          <div className="xl:col-span-3 space-y-3 sm:space-y-4 order-2 xl:order-1">
             {/* Section Info */}
             <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm">
               <span className="px-2 sm:px-3 py-1 bg-gradient-to-r from-violet-400 to-purple-500 text-white rounded-full font-medium shadow-lg text-xs sm:text-sm">
@@ -541,7 +541,7 @@ export function MockTestInterface({
           </div>
 
           {/* Right Column - Question Palette */}
-          <div className="xl:col-span-1 order-2 xl:order-2">
+          <div className="xl:col-span-1 order-1 xl:order-2">
             {/* Mobile: Collapsible Question Palette */}
             <div className="xl:hidden">
               <details className="group">
