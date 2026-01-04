@@ -9,9 +9,10 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { createClient } from "@/lib/supabase";
 import { toast } from "sonner";
 import { IconBrandGoogle, IconBrandFacebook, IconBrandApple } from "@tabler/icons-react";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Home, Layers, MessageSquare, LogIn, UserPlus } from "lucide-react";
 import { navigationEvents } from "@/lib/navigation-events";
 import { Footer } from "@/components/footer";
+import { motion } from "framer-motion";
 import { DotBackground } from "@/components/ui/dot-background";
 
 export default function LoginPage() {
@@ -127,13 +128,13 @@ export default function LoginPage() {
   return (
     <DotBackground className="min-h-screen flex flex-col">
       {/* Main Content */}
-      <main className="flex-1 flex items-center justify-center px-4 py-12 relative z-10">
+      <main className="flex-1 flex items-center justify-center px-4 py-6 sm:py-12 pb-20 md:pb-12 relative z-10">
         <div className="w-full max-w-md">
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-black dark:text-white mb-2">
+          <div className="text-center mb-5 sm:mb-8">
+            <h1 className="text-2xl sm:text-3xl font-bold text-black dark:text-white mb-1.5 sm:mb-2">
               Log in
             </h1>
-            <p className="text-neutral-600 dark:text-neutral-400">
+            <p className="text-sm sm:text-base text-neutral-600 dark:text-neutral-400">
               Don't have an account?{" "}
               <Link href="/signup" className="text-black dark:text-white font-medium hover:underline">
                 Sign up
@@ -141,32 +142,32 @@ export default function LoginPage() {
             </p>
           </div>
 
-          <div className="space-y-4 mb-6">
+          <div className="space-y-3 sm:space-y-4 mb-4 sm:mb-6">
             <Button
               type="button"
               variant="outline"
-              className="w-full h-12 flex items-center justify-center space-x-3 border-2 border-neutral-300 dark:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-900"
+              className="w-full h-10 sm:h-12 flex items-center justify-center space-x-2 sm:space-x-3 border-2 border-neutral-300 dark:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-900 text-sm sm:text-base"
               onClick={handleGoogleLogin}
             >
-              <IconBrandGoogle className="w-5 h-5" />
+              <IconBrandGoogle className="w-4 h-4 sm:w-5 sm:h-5" />
               <span>Continue with Google</span>
             </Button>
           </div>
 
-          <div className="relative mb-6">
+          <div className="relative mb-4 sm:mb-6">
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-neutral-300 dark:border-neutral-700"></div>
             </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-4 bg-white dark:bg-black text-neutral-500 dark:text-neutral-400">
+            <div className="relative flex justify-center text-xs sm:text-sm">
+              <span className="px-3 sm:px-4 bg-white dark:bg-black text-neutral-500 dark:text-neutral-400">
                 Or continue with email
               </span>
             </div>
           </div>
 
-          <form onSubmit={handleLogin} className="space-y-4">
-            <div className="space-y-2">
-              <label htmlFor="email" className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+          <form onSubmit={handleLogin} className="space-y-3 sm:space-y-4">
+            <div className="space-y-1.5 sm:space-y-2">
+              <label htmlFor="email" className="text-xs sm:text-sm font-medium text-neutral-700 dark:text-neutral-300">
                 Email address or user name
               </label>
               <Input
@@ -176,12 +177,12 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="h-12 border-2 border-neutral-300 dark:border-neutral-700 focus:border-black dark:focus:border-white"
+                className="h-10 sm:h-12 text-sm sm:text-base border-2 border-neutral-300 dark:border-neutral-700 focus:border-black dark:focus:border-white"
               />
             </div>
 
-            <div className="space-y-2">
-              <label htmlFor="password" className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+            <div className="space-y-1.5 sm:space-y-2">
+              <label htmlFor="password" className="text-xs sm:text-sm font-medium text-neutral-700 dark:text-neutral-300">
                 Password
               </label>
               <div className="relative">
@@ -192,7 +193,7 @@ export default function LoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="h-12 pr-10 border-2 border-neutral-300 dark:border-neutral-700 focus:border-black dark:focus:border-white"
+                  className="h-10 sm:h-12 pr-10 text-sm sm:text-base border-2 border-neutral-300 dark:border-neutral-700 focus:border-black dark:focus:border-white"
                 />
                 <button
                   type="button"
@@ -200,28 +201,29 @@ export default function LoginPage() {
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200"
                   aria-label={showPassword ? "Hide password" : "Show password"}
                 >
-                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                  {showPassword ? <EyeOff className="h-4 w-4 sm:h-5 sm:w-5" /> : <Eye className="h-4 w-4 sm:h-5 sm:w-5" />}
                 </button>
               </div>
             </div>
 
             <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-1.5 sm:space-x-2">
                 <Checkbox
                   id="remember"
                   checked={rememberMe}
                   onCheckedChange={(checked) => setRememberMe(checked as boolean)}
+                  className="h-4 w-4 sm:h-5 sm:w-5"
                 />
                 <label
                   htmlFor="remember"
-                  className="text-sm text-neutral-600 dark:text-neutral-400 cursor-pointer"
+                  className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 cursor-pointer"
                 >
                   Remember me
                 </label>
               </div>
               <Link
                 href="/forgot-password"
-                className="text-sm text-neutral-600 dark:text-neutral-400 hover:text-black dark:hover:text-white underline"
+                className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 hover:text-black dark:hover:text-white underline"
               >
                 Forget your password
               </Link>
@@ -229,7 +231,7 @@ export default function LoginPage() {
 
             <Button
               type="submit"
-              className="w-full h-12 bg-neutral-800 hover:bg-black dark:bg-neutral-200 dark:hover:bg-white text-white dark:text-black font-medium"
+              className="w-full h-10 sm:h-12 bg-neutral-800 hover:bg-black dark:bg-neutral-200 dark:hover:bg-white text-white dark:text-black font-medium text-sm sm:text-base"
               disabled={isLoading}
             >
               {isLoading ? "Signing in..." : "Log in"}
@@ -240,6 +242,46 @@ export default function LoginPage() {
 
       {/* Footer */}
       <Footer />
+
+      {/* Mobile Bottom Navigation Bar */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-t-2 border-black shadow-[0px_-4px_10px_rgba(0,0,0,0.1)]">
+        <div className="flex items-center justify-around py-2 px-2">
+          {/* Home */}
+          <Link href="/" className="flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-lg text-gray-500">
+            <Home className="h-5 w-5" />
+            <span className="text-[10px] font-medium">Home</span>
+          </Link>
+          
+          {/* Features */}
+          <Link href="/#features" className="flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-lg text-gray-500">
+            <Layers className="h-5 w-5" />
+            <span className="text-[10px] font-medium">Features</span>
+          </Link>
+          
+          {/* Sign Up - Center Button */}
+          <Link href="/signup" className="flex flex-col items-center -mt-4">
+            <motion.div
+              whileTap={{ scale: 0.95 }}
+              className="flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-br from-amber-400 via-orange-500 to-red-500 border-2 border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]"
+            >
+              <UserPlus className="h-6 w-6 text-white" />
+            </motion.div>
+            <span className="text-[10px] font-bold text-black mt-1">Sign Up</span>
+          </Link>
+          
+          {/* Reviews */}
+          <Link href="/#testimonials" className="flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-lg text-gray-500">
+            <MessageSquare className="h-5 w-5" />
+            <span className="text-[10px] font-medium">Reviews</span>
+          </Link>
+          
+          {/* Login - Active */}
+          <Link href="/login" className="flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-lg text-black">
+            <LogIn className="h-5 w-5" />
+            <span className="text-[10px] font-bold">Login</span>
+          </Link>
+        </div>
+      </div>
     </DotBackground>
   );
 }

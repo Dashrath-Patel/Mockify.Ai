@@ -23,6 +23,22 @@ function Slider({
     [value, defaultValue, min, max],
   );
 
+  // Suppress pointer capture errors on touch devices - this is a known Radix UI issue
+  React.useEffect(() => {
+    const originalReleasePointerCapture = Element.prototype.releasePointerCapture;
+    Element.prototype.releasePointerCapture = function(pointerId: number) {
+      try {
+        originalReleasePointerCapture.call(this, pointerId);
+      } catch (error) {
+        // Silently ignore - this is a non-critical error on touch devices
+      }
+    };
+
+    return () => {
+      Element.prototype.releasePointerCapture = originalReleasePointerCapture;
+    };
+  }, []);
+
   return (
     <SliderPrimitive.Root
       data-slot="slider"

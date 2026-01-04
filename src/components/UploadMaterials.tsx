@@ -803,8 +803,8 @@ export function UploadMaterials() {
                 </div>
               ) : filteredMaterials.length > 0 ? (
                 <>
-                  {/* Mobile Card View */}
-                  <div className="sm:hidden space-y-3">
+                  {/* Mobile Card View - Scrollable if more than 5 items */}
+                  <div className={`sm:hidden space-y-3 ${filteredMaterials.length > 5 ? 'max-h-[400px] overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-transparent' : ''}`}>
                     {filteredMaterials.map((material) => {
                       const isDeleting = deletingMaterials.has(material.id);
                       return (
@@ -853,8 +853,8 @@ export function UploadMaterials() {
                     })}
                   </div>
                   
-                  {/* Desktop Table View */}
-                  <div className="hidden sm:block border-2 border-black dark:border-white rounded-xl overflow-hidden bg-white dark:bg-[#2a2a2a] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,0.3)]">
+                  {/* Desktop Table View - Scrollable if more than 6 items */}
+                  <div className={`hidden sm:block border-2 border-black dark:border-white rounded-xl overflow-hidden bg-white dark:bg-[#2a2a2a] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,0.3)] ${filteredMaterials.length > 6 ? 'max-h-[450px] overflow-y-auto' : ''}`}>
                   <Table>
                     <TableHeader>
                       <TableRow className="border-black dark:border-white">
@@ -918,6 +918,15 @@ export function UploadMaterials() {
                     </TableBody>
                   </Table>
                 </div>
+                {/* Items count */}
+                {filteredMaterials.length > 0 && (
+                  <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 pt-2">
+                    <span>{filteredMaterials.length} material{filteredMaterials.length !== 1 ? 's' : ''}</span>
+                    {filteredMaterials.length > 5 && (
+                      <span className="text-[10px] sm:text-xs">Scroll to see more</span>
+                    )}
+                  </div>
+                )}
                 </>
               ) : (
                 <div className="border-2 border-dashed border-gray-300 dark:border-slate-700 rounded-xl p-12 text-center bg-gray-50 dark:bg-slate-800/30">

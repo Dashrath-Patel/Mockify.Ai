@@ -87,7 +87,7 @@ export const InfiniteMovingCards = ({
       >
         {items.map((item, idx) => (
           <li
-            className="relative w-[350px] max-w-full shrink-0 rounded-2xl border-[3px] border-black bg-white px-8 py-6 md:w-[450px] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+            className="relative w-[280px] sm:w-[350px] max-w-full shrink-0 rounded-xl sm:rounded-2xl border-2 sm:border-[3px] border-black bg-white px-4 sm:px-8 py-4 sm:py-6 md:w-[450px] shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
             key={item.name}
           >
             <blockquote>
@@ -95,15 +95,15 @@ export const InfiniteMovingCards = ({
                 aria-hidden="true"
                 className="user-select-none pointer-events-none absolute -top-0.5 -left-0.5 -z-1 h-[calc(100%_+_4px)] w-[calc(100%_+_4px)]"
               ></div>
-              <span className="relative z-20 text-sm leading-[1.6] font-medium text-black">
+              <span className="relative z-20 text-xs sm:text-sm leading-[1.6] font-medium text-black line-clamp-4 sm:line-clamp-none">
                 {item.quote}
               </span>
-              <div className="relative z-20 mt-6 flex flex-row items-center">
-                <span className="flex flex-col gap-1">
-                  <span className="text-sm leading-[1.6] font-bold text-black">
+              <div className="relative z-20 mt-4 sm:mt-6 flex flex-row items-center">
+                <span className="flex flex-col gap-0.5 sm:gap-1">
+                  <span className="text-xs sm:text-sm leading-[1.6] font-bold text-black">
                     {item.name}
                   </span>
-                  <span className="text-sm leading-[1.6] font-medium text-[#555555]">
+                  <span className="text-xs sm:text-sm leading-[1.6] font-medium text-[#555555]">
                     {item.title}
                   </span>
                 </span>

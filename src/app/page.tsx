@@ -253,21 +253,21 @@ export default function Home() {
         <HowItWorksSection />
 
         {/* Testimonials */}
-        <section id="testimonials" className="py-20">
+        <section id="testimonials" className="py-12 sm:py-20">
         <div className="max-w-7xl mx-auto px-4">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
-            className="text-center mb-16"
+            className="text-center mb-8 sm:mb-16"
           >
-            <Badge variant="outline" className="mb-4 bg-gradient-to-r from-violet-400 to-purple-500 border-2 border-black text-white font-bold shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] rounded-xl">
+            <Badge variant="outline" className="mb-3 sm:mb-4 bg-gradient-to-r from-violet-400 to-purple-500 border-2 border-black text-white font-bold shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] rounded-xl text-xs sm:text-sm px-3 py-1">
               Testimonials
             </Badge>
-            <h2 className="text-4xl md:text-5xl font-bold text-black mb-4">
+            <h2 className="text-2xl sm:text-4xl md:text-5xl font-bold text-black mb-3 sm:mb-4">
               Loved by exam aspirants
             </h2>
-            <p className="text-xl text-black max-w-2xl mx-auto font-medium">
+            <p className="text-base sm:text-xl text-black max-w-2xl mx-auto font-medium px-4">
               Join thousands of successful candidates who transformed their exam preparation with MockifyAI
             </p>
           </motion.div>
@@ -277,31 +277,31 @@ export default function Home() {
             direction="left"
             speed="normal"
             pauseOnHover={true}
-            className="py-10"
+            className="py-6 sm:py-10"
           />
         </div>
       </section>
 
         {/* CTA Section */}
-        <section className="py-32">
+        <section className="py-16 sm:py-32">
           <div className="max-w-4xl mx-auto px-4 text-center">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8 }}
-              className="rounded-2xl bg-white border-[3px] border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] p-12"
+              className="rounded-xl sm:rounded-2xl bg-white border-2 sm:border-[3px] border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] sm:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] p-6 sm:p-12"
             >
-              <h2 className="text-4xl md:text-6xl font-bold text-black mb-6">
+              <h2 className="text-2xl sm:text-4xl md:text-6xl font-bold text-black mb-4 sm:mb-6">
                 Ready to ace your exams?
               </h2>
-              <p className="text-xl text-black mb-8 max-w-2xl mx-auto font-medium">
+              <p className="text-base sm:text-xl text-black mb-6 sm:mb-8 max-w-2xl mx-auto font-medium">
                 Join thousands of successful candidates who used MockifyAI to achieve their goals. 
                 Start your free trial today.
               </p>
-              <Button size="lg" asChild className="px-8 py-4 text-lg bg-gradient-to-r from-amber-400 via-orange-500 to-red-500 hover:from-amber-500 hover:via-orange-600 hover:to-red-600 text-white font-bold border-2 border-black rounded-xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all duration-200">
+              <Button size="lg" asChild className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg bg-gradient-to-r from-amber-400 via-orange-500 to-red-500 hover:from-amber-500 hover:via-orange-600 hover:to-red-600 text-white font-bold border-2 border-black rounded-xl shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] sm:hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all duration-200">
                 <Link href="/signup">
                   Start Your Success Story
-                  <ArrowRight className="ml-2 h-5 w-5" />
+                  <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
                 </Link>
               </Button>
             </motion.div>

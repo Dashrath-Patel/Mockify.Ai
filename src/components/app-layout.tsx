@@ -113,6 +113,9 @@ export function AppLayout({ children, hideSidebar = false }: AppLayoutProps) {
     },
   ];
 
+  // State for mobile menu
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
+
   // Mobile bottom nav items (subset of main links for quick access)
   const mobileNavItems = [
     {
@@ -137,9 +140,10 @@ export function AppLayout({ children, hideSidebar = false }: AppLayoutProps) {
       icon: <History className="h-5 w-5" />,
     },
     {
-      label: "Profile",
-      href: "/profile",
-      icon: <UserCircle className="h-5 w-5" />,
+      label: "More",
+      href: "#",
+      icon: <Settings className="h-5 w-5" />,
+      isMenu: true,
     },
   ];
 
@@ -260,6 +264,35 @@ export function AppLayout({ children, hideSidebar = false }: AppLayoutProps) {
                     );
                   }
                   
+                  // Handle menu button
+                  if (item.isMenu) {
+                    return (
+                      <button
+                        key={idx}
+                        onClick={() => setShowMobileMenu(!showMobileMenu)}
+                        className={cn(
+                          "flex flex-col items-center justify-center py-2 px-3 rounded-xl transition-all min-w-[60px]",
+                          showMobileMenu
+                            ? "text-purple-600 dark:text-purple-400"
+                            : "text-gray-500 dark:text-gray-400"
+                        )}
+                      >
+                        <div className={cn(
+                          "p-1.5 rounded-xl transition-all",
+                          showMobileMenu && "bg-purple-100 dark:bg-purple-900/30"
+                        )}>
+                          {item.icon}
+                        </div>
+                        <span className={cn(
+                          "text-[10px] font-medium mt-0.5",
+                          showMobileMenu && "font-bold"
+                        )}>
+                          {item.label}
+                        </span>
+                      </button>
+                    );
+                  }
+                  
                   return (
                     <OptimizedLink
                       key={idx}
@@ -290,6 +323,45 @@ export function AppLayout({ children, hideSidebar = false }: AppLayoutProps) {
               </div>
               {/* Safe area for devices with home indicator */}
               <div className="h-safe-area-inset-bottom bg-white dark:bg-[#1a1a1a]" />
+              
+              {/* Mobile Menu Popup */}
+              {showMobileMenu && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 20 }}
+                  className="absolute bottom-20 right-4 bg-white dark:bg-[#1a1a1a] rounded-xl border-2 border-black dark:border-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] overflow-hidden min-w-[160px]"
+                >
+                  <OptimizedLink
+                    href="/profile"
+                    prefetch={true}
+                    onClick={() => setShowMobileMenu(false)}
+                    className="flex items-center gap-3 px-4 py-3 text-sm font-bold text-black dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition-all border-b border-gray-200 dark:border-gray-700"
+                  >
+                    <UserCircle className="h-5 w-5" />
+                    <span>Profile</span>
+                  </OptimizedLink>
+                  <OptimizedLink
+                    href="/dashboard/settings"
+                    prefetch={true}
+                    onClick={() => setShowMobileMenu(false)}
+                    className="flex items-center gap-3 px-4 py-3 text-sm font-bold text-black dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition-all border-b border-gray-200 dark:border-gray-700"
+                  >
+                    <Settings className="h-5 w-5" />
+                    <span>Settings</span>
+                  </OptimizedLink>
+                  <button
+                    onClick={() => {
+                      setShowMobileMenu(false);
+                      handleLogout();
+                    }}
+                    className="flex items-center gap-3 w-full px-4 py-3 text-sm font-bold text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all"
+                  >
+                    <LogOut className="h-5 w-5" />
+                    <span>Logout</span>
+                  </button>
+                </motion.div>
+              )}
             </nav>
           )}
         </div>

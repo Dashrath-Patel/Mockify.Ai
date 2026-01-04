@@ -33,23 +33,23 @@ const steps = [
 
 export default function HowItWorksSection() {
   return (
-    <section id="how-it-works" className="py-20">
+    <section id="how-it-works" className="py-12 sm:py-20">
       <div className="max-w-6xl mx-auto px-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
-          className="text-center mb-16"
+          className="text-center mb-8 sm:mb-16"
         >
-          <Badge variant="outline" className="mb-4">
+          <Badge variant="outline" className="mb-3 sm:mb-4 text-xs sm:text-sm">
             How it Works
           </Badge>
-          <h2 className="text-4xl md:text-5xl font-bold text-black dark:text-white mb-4">
+          <h2 className="text-2xl sm:text-4xl md:text-5xl font-bold text-black dark:text-white mb-3 sm:mb-4 px-2">
             Get started in 3 simple steps
           </h2>
         </motion.div>
 
-        <div className="grid md:grid-cols-3 gap-8 items-stretch">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-8 items-stretch">
           {steps.map((item, index) => (
             <motion.div
               key={index}
@@ -59,12 +59,12 @@ export default function HowItWorksSection() {
               className="flex"
             >
               <CometCard className="w-full">
-                <div className="p-8 bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 flex flex-col min-h-[320px]">
-                  <item.icon className="h-12 w-12 text-white bg-gradient-to-br from-primary to-primary/80 p-3 rounded-full mx-auto mb-6 shadow-lg" />
-                  <h3 className="text-xl font-semibold mb-4 text-black dark:text-white text-center">
+                <div className="p-5 sm:p-8 bg-white dark:bg-neutral-900 rounded-xl sm:rounded-2xl border border-neutral-200 dark:border-neutral-800 flex flex-col min-h-[220px] sm:min-h-[320px]">
+                  <item.icon className="h-10 w-10 sm:h-12 sm:w-12 text-white bg-gradient-to-br from-primary to-primary/80 p-2.5 sm:p-3 rounded-full mx-auto mb-4 sm:mb-6 shadow-lg" />
+                  <h3 className="text-lg sm:text-xl font-semibold mb-2 sm:mb-4 text-black dark:text-white text-center">
                     {item.title}
                   </h3>
-                  <p className="text-neutral-600 dark:text-neutral-400 text-center text-sm leading-relaxed">
+                  <p className="text-neutral-600 dark:text-neutral-400 text-center text-xs sm:text-sm leading-relaxed">
                     {item.description}
                   </p>
                 </div>

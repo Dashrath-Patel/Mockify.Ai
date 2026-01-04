@@ -57,9 +57,10 @@ export const HeroParallax = ({
   return (
     <div
       ref={ref}
-      className="h-[300vh] py-40 overflow-hidden  antialiased relative flex flex-col self-auto [perspective:1000px] [transform-style:preserve-3d]"
+      className="h-auto min-h-[70vh] md:h-[300vh] py-6 sm:py-10 md:py-40 overflow-hidden antialiased relative flex flex-col self-auto md:[perspective:1000px] md:[transform-style:preserve-3d]"
     >
       <Header />
+      {/* Hide parallax images on mobile, show only on md+ */}
       <motion.div
         style={{
           rotateX,
@@ -67,7 +68,7 @@ export const HeroParallax = ({
           translateY,
           opacity,
         }}
-        className=""
+        className="hidden md:block"
       >
         <motion.div className="flex flex-row-reverse space-x-reverse space-x-20 mb-20">
           {firstRow.map((product) => (
@@ -103,17 +104,33 @@ export const HeroParallax = ({
 
 export const Header = () => {
   return (
-    <div className="max-w-7xl relative mx-auto py-20 md:py-40 px-4 w-full left-0 top-0">
-      <h1 className="text-2xl md:text-7xl font-bold text-black dark:text-white">
+    <div className="max-w-7xl relative mx-auto py-8 sm:py-12 md:py-40 px-4 w-full left-0 top-0">
+      <h1 className="text-2xl sm:text-3xl md:text-7xl font-bold text-black dark:text-white">
         Transform Your Study Materials into{" "}
         <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-blue-600">
           Intelligent Mock Tests
         </span>
       </h1>
-      <p className="max-w-2xl text-base md:text-xl mt-8 text-neutral-600 dark:text-neutral-300">
+      <p className="max-w-2xl text-sm sm:text-base md:text-xl mt-4 sm:mt-6 md:mt-8 text-neutral-600 dark:text-neutral-300">
         Upload your notes, PDFs, or images and let our AI generate personalized mock exams.
         Get instant feedback, detailed analytics, and accelerate your exam preparation with MockifyAI.
       </p>
+      
+      {/* Mobile CTA Buttons */}
+      <div className="flex flex-col sm:flex-row gap-3 mt-6 md:hidden">
+        <a 
+          href="/signup" 
+          className="inline-flex items-center justify-center px-6 py-3 text-sm font-bold text-white bg-gradient-to-r from-amber-400 via-orange-500 to-red-500 border-2 border-black rounded-xl shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-0.5 active:translate-y-0.5 transition-all"
+        >
+          Get Started Free
+        </a>
+        <a 
+          href="#features" 
+          className="inline-flex items-center justify-center px-6 py-3 text-sm font-bold text-black bg-white border-2 border-black rounded-xl shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-0.5 active:translate-y-0.5 transition-all"
+        >
+          Explore Features
+        </a>
+      </div>
     </div>
   );
 };

@@ -273,13 +273,13 @@ export function Profile() {
   }
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto">
+    <div className="p-3 sm:p-4 md:p-6 lg:p-8 space-y-4 sm:space-y-6 max-w-4xl mx-auto">
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
       >
-        <h1 className="text-3xl font-bold text-black mb-2">Profile</h1>
-        <p className="text-[#555555]">Manage your account information and security</p>
+        <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-black dark:text-white mb-1 sm:mb-2">Profile</h1>
+        <p className="text-sm sm:text-base text-[#555555] dark:text-gray-400">Manage your account information and security</p>
       </motion.div>
 
       <motion.div
@@ -292,19 +292,19 @@ export function Profile() {
           transition: { duration: 0.2 }
         }}
       >
-        <Card className="rounded-2xl bg-white border-[3px] border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] group-hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all duration-200">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-black font-bold">Personal Information</CardTitle>
+        <Card className="rounded-xl sm:rounded-2xl bg-white dark:bg-[#1a1a1a] border-2 sm:border-[3px] border-black dark:border-white shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[3px_3px_0px_0px_rgba(255,255,255,1)] sm:dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] group-hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] sm:group-hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all duration-200">
+          <CardHeader className="p-3 sm:p-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-0">
+              <CardTitle className="text-black dark:text-white font-bold text-sm sm:text-base">Personal Information</CardTitle>
               <div className="flex gap-2">
                 {!isEditing ? (
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => setIsEditing(true)}
-                    className="bg-white border-2 border-black text-black rounded-xl font-bold shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
+                    className="bg-white dark:bg-[#2a2a2a] border-2 border-black dark:border-white text-black dark:text-white rounded-lg sm:rounded-xl font-bold shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] text-xs sm:text-sm h-8 sm:h-9 px-2 sm:px-3"
                   >
-                    <Edit2 className="h-4 w-4 mr-2" />
+                    <Edit2 className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                     Edit
                   </Button>
                 ) : (
@@ -313,18 +313,18 @@ export function Profile() {
                       variant="outline"
                       size="sm"
                       onClick={handleCancel}
-                      className="bg-white border-2 border-black text-black rounded-xl font-bold shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
+                      className="bg-white dark:bg-[#2a2a2a] border-2 border-black dark:border-white text-black dark:text-white rounded-lg sm:rounded-xl font-bold shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] text-xs sm:text-sm h-8 sm:h-9 px-2 sm:px-3"
                     >
-                      <X className="h-4 w-4 mr-2" />
+                      <X className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                       Cancel
                     </Button>
                     <Button
                       size="sm"
                       onClick={handleSave}
                       disabled={isSaving}
-                      className="bg-gradient-to-r from-amber-400 via-orange-500 to-red-500 hover:from-amber-500 hover:via-orange-600 hover:to-red-600 text-white border-2 border-black rounded-xl font-bold shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
+                      className="bg-gradient-to-r from-amber-400 via-orange-500 to-red-500 hover:from-amber-500 hover:via-orange-600 hover:to-red-600 text-white border-2 border-black rounded-lg sm:rounded-xl font-bold shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] text-xs sm:text-sm h-8 sm:h-9 px-2 sm:px-3"
                     >
-                      <Save className="h-4 w-4 mr-2" />
+                      <Save className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                       {isSaving ? "Saving..." : "Save"}
                     </Button>
                   </>
@@ -332,24 +332,24 @@ export function Profile() {
               </div>
             </div>
           </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-6 mb-8">
-              <Avatar className="h-24 w-24 border-[3px] border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+          <CardContent className="p-3 sm:p-6 pt-0 sm:pt-0">
+            <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 mb-6 sm:mb-8">
+              <Avatar className="h-16 w-16 sm:h-24 sm:w-24 border-2 sm:border-[3px] border-black dark:border-white shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
                 <AvatarImage src="" />
-                <AvatarFallback className="bg-gradient-to-r from-violet-400 to-purple-500 text-white text-2xl font-bold">
+                <AvatarFallback className="bg-gradient-to-r from-violet-400 to-purple-500 text-white text-lg sm:text-2xl font-bold">
                   {getInitials(profileData.name)}
                 </AvatarFallback>
               </Avatar>
-              <div>
-                <h3 className="text-xl font-bold text-black">{profileData.name}</h3>
-                <p className="text-[#555555] font-medium">{profileData.email}</p>
+              <div className="text-center sm:text-left">
+                <h3 className="text-lg sm:text-xl font-bold text-black dark:text-white">{profileData.name}</h3>
+                <p className="text-sm sm:text-base text-[#555555] dark:text-gray-400 font-medium">{profileData.email}</p>
               </div>
             </div>
 
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="name" className="text-black font-bold">
+            <div className="space-y-3 sm:space-y-4">
+              <div className="grid grid-cols-1 gap-3 sm:gap-4">
+                <div className="space-y-1.5 sm:space-y-2">
+                  <Label htmlFor="name" className="text-black dark:text-white font-bold text-xs sm:text-sm">
                     Full Name
                   </Label>
                   {isEditing ? (
@@ -361,18 +361,18 @@ export function Profile() {
                           editedData ? { ...editedData, name: e.target.value } : null
                         )
                       }
-                      className="bg-white border-2 border-black text-black rounded-xl font-medium shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
+                      className="bg-white dark:bg-[#2a2a2a] border-2 border-black dark:border-white text-black dark:text-white rounded-lg sm:rounded-xl font-medium shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] text-sm"
                     />
                   ) : (
-                    <div className="flex items-center gap-2 p-3 bg-white rounded-xl border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
-                      <User className="h-4 w-4 text-black" />
-                      <span className="text-black font-medium">{profileData.name}</span>
+                    <div className="flex items-center gap-2 p-2.5 sm:p-3 bg-white dark:bg-[#2a2a2a] rounded-lg sm:rounded-xl border-2 border-black dark:border-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+                      <User className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-black dark:text-white" />
+                      <span className="text-black dark:text-white font-medium text-sm">{profileData.name}</span>
                     </div>
                   )}
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="email" className="text-black font-bold">
+                <div className="space-y-1.5 sm:space-y-2">
+                  <Label htmlFor="email" className="text-black dark:text-white font-bold text-xs sm:text-sm">
                     Email Address
                   </Label>
                   {isEditing ? (
@@ -385,22 +385,22 @@ export function Profile() {
                           editedData ? { ...editedData, email: e.target.value } : null
                         )
                       }
-                      className="bg-white border-2 border-black text-black rounded-xl font-medium shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
+                      className="bg-white dark:bg-[#2a2a2a] border-2 border-black dark:border-white text-black dark:text-white rounded-lg sm:rounded-xl font-medium shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] text-sm"
                     />
                   ) : (
-                    <div className="flex items-center gap-2 p-3 bg-white rounded-xl border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
-                      <Mail className="h-4 w-4 text-black" />
-                      <span className="text-black font-medium">{profileData.email}</span>
+                    <div className="flex items-center gap-2 p-2.5 sm:p-3 bg-white dark:bg-[#2a2a2a] rounded-lg sm:rounded-xl border-2 border-black dark:border-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+                      <Mail className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-black dark:text-white" />
+                      <span className="text-black dark:text-white font-medium text-sm">{profileData.email}</span>
                     </div>
                   )}
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <Label className="text-black font-bold">Member Since</Label>
-                <div className="flex items-center gap-2 p-3 bg-white rounded-xl border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
-                  <Calendar className="h-4 w-4 text-black" />
-                  <span className="text-black font-medium">{formatDate(profileData.created_at)}</span>
+              <div className="space-y-1.5 sm:space-y-2">
+                <Label className="text-black dark:text-white font-bold text-xs sm:text-sm">Member Since</Label>
+                <div className="flex items-center gap-2 p-2.5 sm:p-3 bg-white dark:bg-[#2a2a2a] rounded-lg sm:rounded-xl border-2 border-black dark:border-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+                  <Calendar className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-black dark:text-white" />
+                  <span className="text-black dark:text-white font-medium text-sm">{formatDate(profileData.created_at)}</span>
                 </div>
               </div>
             </div>
@@ -419,18 +419,18 @@ export function Profile() {
           transition: { duration: 0.2 }
         }}
       >
-        <Card className="rounded-2xl bg-white border-[3px] border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] group-hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all duration-200">
-          <CardHeader>
-            <CardTitle className="text-black font-bold">Security</CardTitle>
+        <Card className="rounded-xl sm:rounded-2xl bg-white dark:bg-[#1a1a1a] border-2 sm:border-[3px] border-black dark:border-white shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[3px_3px_0px_0px_rgba(255,255,255,1)] sm:dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] group-hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] sm:group-hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all duration-200">
+          <CardHeader className="p-3 sm:p-6">
+            <CardTitle className="text-black dark:text-white font-bold text-sm sm:text-base">Security</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between p-4 bg-white rounded-xl border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
-                <div className="flex items-center gap-3">
-                  <Lock className="h-5 w-5 text-black" />
+          <CardContent className="p-3 sm:p-6 pt-0 sm:pt-0">
+            <div className="space-y-3 sm:space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 sm:p-4 bg-white dark:bg-[#2a2a2a] rounded-lg sm:rounded-xl border-2 border-black dark:border-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <Lock className="h-4 w-4 sm:h-5 sm:w-5 text-black dark:text-white" />
                   <div>
-                    <p className="text-black font-bold">Password</p>
-                    <p className="text-sm text-[#555555] font-medium">
+                    <p className="text-black dark:text-white font-bold text-sm">Password</p>
+                    <p className="text-xs sm:text-sm text-[#555555] dark:text-gray-400 font-medium">
                       Change your account password
                     </p>
                   </div>
@@ -439,7 +439,7 @@ export function Profile() {
                   variant="outline"
                   size="sm"
                   onClick={() => setShowPasswordDialog(true)}
-                  className="bg-white border-2 border-black text-black rounded-xl font-bold shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
+                  className="bg-white dark:bg-[#2a2a2a] border-2 border-black dark:border-white text-black dark:text-white rounded-lg sm:rounded-xl font-bold shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] text-xs sm:text-sm h-8 sm:h-9 w-full sm:w-auto"
                 >
                   Change Password
                 </Button>

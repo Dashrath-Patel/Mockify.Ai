@@ -15,15 +15,15 @@ import Image from "next/image";
 
 export function MockifyFeaturesBento() {
   return (
-    <div className="py-20 lg:py-40">
-      <div className="text-center mb-16">
-        <h2 className="text-4xl md:text-5xl font-bold text-black mb-4">
+    <div className="py-8 sm:py-12 lg:py-40 pb-20 md:pb-8">
+      <div className="text-center mb-6 sm:mb-16 px-4">
+        <h2 className="text-xl sm:text-4xl md:text-5xl font-bold text-black mb-2 sm:mb-4">
           Everything You Need to{" "}
           <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-blue-600">
             Ace Your Exams
           </span>
         </h2>
-        <p className="text-black max-w-2xl mx-auto font-medium text-lg">
+        <p className="text-black max-w-2xl mx-auto font-medium text-xs sm:text-lg">
           Powerful features designed to transform your exam preparation
         </p>
       </div>
@@ -46,7 +46,7 @@ export function MockifyFeaturesBento() {
 
 const AIGeneration = () => {
   return (
-    <div className="flex flex-1 w-full h-full min-h-[6rem] dark:bg-dot-white/[0.2] bg-dot-black/[0.2] p-6">
+    <div className="flex flex-1 w-full h-full min-h-[4rem] sm:min-h-[6rem] dark:bg-dot-white/[0.2] bg-dot-black/[0.2] p-3 sm:p-6">
       <div className="w-full h-full flex items-center justify-center">
         <div className="relative">
           {/* Central AI Icon */}
@@ -54,7 +54,7 @@ const AIGeneration = () => {
             animate={{
               boxShadow: [
                 "0 0 0 0 rgba(147, 51, 234, 0.4)",
-                "0 0 0 20px rgba(147, 51, 234, 0)",
+                "0 0 0 15px rgba(147, 51, 234, 0)",
                 "0 0 0 0 rgba(147, 51, 234, 0)",
               ],
             }}
@@ -62,12 +62,12 @@ const AIGeneration = () => {
               duration: 2,
               repeat: Infinity,
             }}
-            className="w-20 h-20 rounded-2xl bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center relative z-10"
+            className="w-12 h-12 sm:w-20 sm:h-20 rounded-xl sm:rounded-2xl bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center relative z-10"
           >
-            <IconBrain className="h-10 w-10 text-white" />
+            <IconBrain className="h-6 w-6 sm:h-10 sm:w-10 text-white" />
           </motion.div>
 
-          {/* Floating Question Bubbles */}
+          {/* Floating Question Bubbles - Hidden on mobile */}
           <motion.div
             animate={{
               y: [-5, 5, -5],
@@ -78,7 +78,7 @@ const AIGeneration = () => {
               repeat: Infinity,
               ease: "easeInOut",
             }}
-            className="absolute -top-6 -right-6 w-10 h-10 bg-purple-500/30 backdrop-blur-sm border border-purple-500/50 rounded-lg flex items-center justify-center"
+            className="hidden sm:flex absolute -top-6 -right-6 w-10 h-10 bg-purple-500/30 backdrop-blur-sm border border-purple-500/50 rounded-lg items-center justify-center"
           >
             <span className="text-xs font-bold text-purple-600 dark:text-purple-300">Q1</span>
           </motion.div>
@@ -122,24 +122,24 @@ const AIGeneration = () => {
 
 const SmartUpload = () => {
   return (
-    <div className="flex flex-1 w-full h-full min-h-[6rem] dark:bg-dot-white/[0.2] bg-dot-black/[0.2] flex-col items-center justify-center p-4">
-      <div className="w-full max-w-xs">
+    <div className="flex flex-1 w-full h-full min-h-[4rem] sm:min-h-[6rem] dark:bg-dot-white/[0.2] bg-dot-black/[0.2] flex-col items-center justify-center p-2 sm:p-4">
+      <div className="w-full max-w-[180px] sm:max-w-xs">
         <motion.div
           whileHover="animate"
-          className="p-6 group/file block rounded-lg cursor-pointer w-full relative overflow-hidden border-2 border-dashed border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900"
+          className="p-3 sm:p-6 group/file block rounded-lg cursor-pointer w-full relative overflow-hidden border-2 border-dashed border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900"
         >
           <div className="flex flex-col items-center justify-center">
             <motion.div
-              className="relative z-40 bg-white dark:bg-neutral-900 flex items-center justify-center h-20 w-20 rounded-md shadow-lg"
+              className="relative z-40 bg-white dark:bg-neutral-900 flex items-center justify-center h-12 w-12 sm:h-20 sm:w-20 rounded-md shadow-lg"
               initial={{ y: 0 }}
               whileHover={{ y: -5 }}
             >
-              <IconUpload className="h-8 w-8 text-neutral-600 dark:text-neutral-300" />
+              <IconUpload className="h-5 w-5 sm:h-8 sm:w-8 text-neutral-600 dark:text-neutral-300" />
             </motion.div>
-            <p className="relative z-20 font-sans font-bold text-neutral-700 dark:text-neutral-300 text-sm mt-4">
+            <p className="relative z-20 font-sans font-bold text-neutral-700 dark:text-neutral-300 text-xs sm:text-sm mt-2 sm:mt-4">
               Upload file
             </p>
-            <p className="relative z-20 font-sans font-normal text-neutral-400 dark:text-neutral-400 text-xs mt-1 text-center">
+            <p className="relative z-20 font-sans font-normal text-neutral-400 dark:text-neutral-400 text-[10px] sm:text-xs mt-0.5 sm:mt-1 text-center">
               Drag or drop files here
             </p>
           </div>
@@ -151,7 +151,7 @@ const SmartUpload = () => {
 
 const Analytics = () => {
   return (
-    <div className="flex flex-1 w-full h-full min-h-[6rem] rounded-xl overflow-hidden bg-gradient-to-br from-blue-50 to-purple-50 p-4">
+    <div className="flex flex-1 w-full h-full min-h-[4rem] sm:min-h-[6rem] rounded-xl overflow-hidden bg-gradient-to-br from-blue-50 to-purple-50 p-2 sm:p-4">
       <div className="w-full h-full relative rounded-lg overflow-hidden border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
         <img
           src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&h=600&fit=crop"
@@ -198,34 +198,37 @@ const TimedTests = () => {
   }, []);
 
   return (
-    <div className="flex flex-1 w-full h-full min-h-[6rem] dark:bg-dot-white/[0.2] bg-dot-black/[0.2] flex-col items-center justify-center p-4">
-      <div className="flex items-center gap-2">
+    <div className="flex flex-1 w-full h-full min-h-[4rem] sm:min-h-[6rem] dark:bg-dot-white/[0.2] bg-dot-black/[0.2] flex-col items-center justify-center p-2 sm:p-4">
+      <div className="flex items-center gap-1 sm:gap-2">
         <div className="flex flex-col items-center">
-          <div className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+          <div className="text-xl sm:text-4xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
             {String(time.hours).padStart(2, '0')}
           </div>
-          <span className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">Hours</span>
+          <span className="text-[8px] sm:text-xs text-neutral-500 dark:text-neutral-400 mt-0.5 sm:mt-1">Hours</span>
         </div>
-        <div className="text-4xl font-bold text-neutral-600 dark:text-neutral-400">:</div>
+        <div className="text-xl sm:text-4xl font-bold text-neutral-600 dark:text-neutral-400">:</div>
         <div className="flex flex-col items-center">
-          <div className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+          <div className="text-xl sm:text-4xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
             {String(time.minutes).padStart(2, '0')}
           </div>
-          <span className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">Minutes</span>
+          <span className="text-[8px] sm:text-xs text-neutral-500 dark:text-neutral-400 mt-0.5 sm:mt-1">Min</span>
         </div>
-        <div className="text-4xl font-bold text-neutral-600 dark:text-neutral-400">:</div>
+        <div className="text-xl sm:text-4xl font-bold text-neutral-600 dark:text-neutral-400">:</div>
         <div className="flex flex-col items-center">
-          <div className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+          <div className="text-xl sm:text-4xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
             {String(time.seconds).padStart(2, '0')}
           </div>
-          <span className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">Seconds</span>
+          <span className="text-[8px] sm:text-xs text-neutral-500 dark:text-neutral-400 mt-0.5 sm:mt-1">Sec</span>
         </div>
-        <div className="text-4xl font-bold text-neutral-600 dark:text-neutral-400">:</div>
-        <div className="flex flex-col items-center">
-          <div className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-            {String(time.milliseconds).padStart(3, '0')}
+        {/* Hide milliseconds on mobile */}
+        <div className="hidden sm:flex items-center gap-2">
+          <div className="text-4xl font-bold text-neutral-600 dark:text-neutral-400">:</div>
+          <div className="flex flex-col items-center">
+            <div className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+              {String(time.milliseconds).padStart(3, '0')}
+            </div>
+            <span className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">Milliseconds</span>
           </div>
-          <span className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">Milliseconds</span>
         </div>
       </div>
     </div>

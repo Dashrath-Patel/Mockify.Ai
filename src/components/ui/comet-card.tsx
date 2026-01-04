@@ -1,5 +1,5 @@
 "use client";
-import React, { useRef } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import {
   motion,
   useMotionValue,
@@ -21,6 +21,12 @@ export const CometCard = ({
   children: React.ReactNode;
 }) => {
   const ref = useRef<HTMLDivElement>(null);
+  const [isTouchDevice, setIsTouchDevice] = useState(false);
+
+  // Detect touch device on mount
+  useEffect(() => {
+    setIsTouchDevice('ontouchstart' in window || navigator.maxTouchPoints > 0);
+  }, []);
 
   const x = useMotionValue(0);
   const y = useMotionValue(0);
@@ -78,6 +84,17 @@ export const CometCard = ({
     y.set(0);
   };
 
+  // For touch devices, render a simpler card without 3D effects
+  if (isTouchDevice) {
+    return (
+      <div className={cn("", className)}>
+        <div className="relative rounded-xl sm:rounded-2xl">
+          {children}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={cn("perspective-distant transform-3d", className)}>
       <motion.div
@@ -98,11 +115,11 @@ export const CometCard = ({
           z: 50,
           transition: { duration: 0.2 },
         }}
-        className="relative rounded-2xl"
+        className="relative rounded-xl sm:rounded-2xl"
       >
         {children}
         <motion.div
-          className="pointer-events-none absolute inset-0 z-50 h-full w-full rounded-[16px] mix-blend-overlay"
+          className="pointer-events-none absolute inset-0 z-50 h-full w-full rounded-[12px] sm:rounded-[16px] mix-blend-overlay"
           style={{
             background: glareBackground,
             opacity: 0.6,

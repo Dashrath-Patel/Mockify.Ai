@@ -483,18 +483,18 @@ export function TestHistory() {
                 <Card className="group h-full flex flex-col hover:shadow-lg transition-all duration-300 border border-gray-200 dark:border-gray-800 hover:border-[#030213] dark:hover:border-purple-500 overflow-hidden">
                   <CardContent className="p-0 flex flex-col h-full">
                     {/* Header */}
-                    <div className={`p-4 border-b border-gray-100 dark:border-gray-800 ${
+                    <div className={`p-2.5 sm:p-4 border-b border-gray-100 dark:border-gray-800 ${
                       test.is_scheduled 
                         ? 'bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30' 
                         : 'bg-gradient-to-r from-gray-50 to-white dark:from-gray-900 dark:to-gray-800'
                     }`}>
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex-1 min-w-0">
-                          <h3 className="font-semibold text-gray-900 dark:text-white text-sm h-10 line-clamp-2 mb-1">
+                          <h3 className="font-semibold text-gray-900 dark:text-white text-xs sm:text-sm h-8 sm:h-10 line-clamp-2 mb-1">
                             {test.name}
                           </h3>
-                          <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
-                            <Calendar className="h-3 w-3 shrink-0" />
+                          <div className="flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs text-gray-500 dark:text-gray-400">
+                            <Calendar className="h-2.5 w-2.5 sm:h-3 sm:w-3 shrink-0" />
                             {test.is_scheduled && test.scheduled_date 
                               ? new Date(test.scheduled_date).toLocaleDateString('en-IN', { 
                                   weekday: 'short', 
@@ -506,8 +506,8 @@ export function TestHistory() {
                             }
                           </div>
                           {test.is_scheduled && test.scheduled_date && test.scheduled_time && (
-                            <div className="flex items-center gap-2 text-xs mt-1">
-                              <Clock className="h-3 w-3 shrink-0 text-blue-500" />
+                            <div className="flex items-center gap-1 sm:gap-2 text-[10px] sm:text-xs mt-0.5 sm:mt-1">
+                              <Clock className="h-2.5 w-2.5 sm:h-3 sm:w-3 shrink-0 text-blue-500" />
                               <span className="font-medium text-blue-600 dark:text-blue-400">
                                 {(() => {
                                   const [hours, minutes] = test.scheduled_time.split(':');
@@ -522,64 +522,64 @@ export function TestHistory() {
                         </div>
                         <button
                           onClick={(e) => handleDeleteClick(test.id, e)}
-                          className="p-2 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors shrink-0"
+                          className="p-1.5 sm:p-2 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors shrink-0"
                         >
-                          <Trash2 className="w-4 h-4" />
+                          <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                         </button>
                       </div>
                     </div>
                     
                     {/* Body */}
-                    <div className="p-4 flex flex-col flex-1">
-                      <div className="flex flex-wrap gap-2 min-h-[60px]">
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 h-fit bg-gradient-to-r from-violet-500 to-purple-600 text-white text-xs font-medium rounded-full">
-                          <Brain className="h-3 w-3" />
+                    <div className="p-2.5 sm:p-4 flex flex-col flex-1">
+                      <div className="flex flex-wrap gap-1 sm:gap-2 min-h-[40px] sm:min-h-[60px]">
+                        <span className="inline-flex items-center gap-0.5 sm:gap-1 px-1.5 sm:px-2.5 py-0.5 sm:py-1 h-fit bg-gradient-to-r from-violet-500 to-purple-600 text-white text-[10px] sm:text-xs font-medium rounded-full">
+                          <Brain className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
                           {test.exam_type}
                         </span>
                         {test.is_scheduled && (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-1 h-fit bg-gradient-to-r from-blue-500 to-indigo-500 text-white text-xs font-medium rounded-full animate-pulse">
-                            <Calendar className="h-3 w-3" />
+                          <span className="inline-flex items-center gap-0.5 sm:gap-1 px-1.5 sm:px-2.5 py-0.5 sm:py-1 h-fit bg-gradient-to-r from-blue-500 to-indigo-500 text-white text-[10px] sm:text-xs font-medium rounded-full animate-pulse">
+                            <Calendar className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
                             Scheduled
                           </span>
                         )}
                         {test.name.includes('Weak Topics') && (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-1 h-fit bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs font-medium rounded-full">
-                            <Target className="h-3 w-3" />
+                          <span className="inline-flex items-center gap-0.5 sm:gap-1 px-1.5 sm:px-2.5 py-0.5 sm:py-1 h-fit bg-gradient-to-r from-amber-500 to-orange-500 text-white text-[10px] sm:text-xs font-medium rounded-full">
+                            <Target className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
                             Weak Topics
                           </span>
                         )}
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 h-fit bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-xs font-medium rounded-full">
-                          {test.questions.length} Questions
+                        <span className="inline-flex items-center gap-0.5 sm:gap-1 px-1.5 sm:px-2.5 py-0.5 sm:py-1 h-fit bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-[10px] sm:text-xs font-medium rounded-full">
+                          {test.questions.length} Q
                         </span>
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 h-fit bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-xs font-medium rounded-full">
-                          <Clock className="h-3 w-3" />
-                          {test.duration} min
+                        <span className="inline-flex items-center gap-0.5 sm:gap-1 px-1.5 sm:px-2.5 py-0.5 sm:py-1 h-fit bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-[10px] sm:text-xs font-medium rounded-full">
+                          <Clock className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
+                          {test.duration}m
                         </span>
                       </div>
                       
                       {test.is_scheduled && test.scheduled_date && test.scheduled_time && (
-                        <div className="mt-3 p-2 rounded-lg bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-900">
-                          <p className="text-xs font-medium text-blue-700 dark:text-blue-300">
+                        <div className="mt-2 sm:mt-3 p-1.5 sm:p-2 rounded-lg bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-900">
+                          <p className="text-[10px] sm:text-xs font-medium text-blue-700 dark:text-blue-300">
                             ⏱️ {getTimeUntilScheduled(test.scheduled_date, test.scheduled_time).text}
                           </p>
-                          <p className="text-[10px] text-blue-600 dark:text-blue-400 mt-0.5">
+                          <p className="text-[9px] sm:text-[10px] text-blue-600 dark:text-blue-400 mt-0.5 hidden sm:block">
                             You can start this test now or wait until scheduled time
                           </p>
                         </div>
                       )}
                       
-                      <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-1 mt-3">
+                      <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 line-clamp-1 mt-2 sm:mt-3">
                         <span className="font-medium">Topic:</span> {test.topic}
                       </p>
                       
-                      <div className="mt-auto pt-3">
+                      <div className="mt-auto pt-2 sm:pt-3">
                         <Button
                           onClick={() => handleStartTest(test)}
-                          className="w-full bg-[#030213] hover:bg-[#0a0a2e] dark:bg-purple-600 dark:hover:bg-purple-700 text-white group-hover:shadow-md transition-shadow"
+                          className="w-full bg-[#030213] hover:bg-[#0a0a2e] dark:bg-purple-600 dark:hover:bg-purple-700 text-white group-hover:shadow-md transition-shadow text-xs sm:text-sm h-8 sm:h-10"
                         >
-                          <Play className="h-4 w-4 mr-2" />
+                          <Play className="h-3 w-3 sm:h-4 sm:w-4 mr-1.5 sm:mr-2" />
                           Start Test
-                          <ChevronRight className="h-4 w-4 ml-auto opacity-0 group-hover:opacity-100 transition-opacity" />
+                          <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4 ml-auto opacity-0 group-hover:opacity-100 transition-opacity" />
                         </Button>
                       </div>
                     </div>
