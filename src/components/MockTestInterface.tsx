@@ -415,7 +415,7 @@ export function MockTestInterface({
 
       {/* Main Content */}
       <div className="max-w-[1920px] mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6">
-        <div className="flex flex-col xl:grid xl:grid-cols-4 gap-4 sm:gap-6">
+        <div className="flex flex-col xl:grid xl:grid-cols-4 gap-5 sm:gap-6">
           {/* Left Column - Question */}
           <div className="xl:col-span-3 space-y-3 sm:space-y-4 order-2 xl:order-1">
             {/* Section Info */}
@@ -536,64 +536,56 @@ export function MockTestInterface({
                     </Button>
                   </div>
                 </div>
+                {/* Mobile Submit Button */}
+                <div className="xl:hidden mt-3">
+                  <Button
+                    onClick={handleSubmitClick}
+                    className="w-full bg-gradient-to-r from-emerald-400 to-teal-500 hover:from-emerald-500 hover:to-teal-600 text-white border-2 border-black font-semibold py-3"
+                  >
+                    Submit Test
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           </div>
 
           {/* Right Column - Question Palette */}
           <div className="xl:col-span-1 order-1 xl:order-2">
-            {/* Mobile: Collapsible Question Palette */}
+            {/* Mobile: Always visible Question Palette */}
             <div className="xl:hidden">
-              <details className="group">
-                <summary className="list-none cursor-pointer">
-                  <Card className="rounded-xl bg-[#F9F6F2] dark:bg-[#1a1a1a] border-2 border-black dark:border-white">
-                    <CardContent className="py-3 px-4">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <span className="text-sm font-semibold">Question Palette</span>
-                          <div className="flex items-center gap-2 text-xs">
-                            <span className="flex items-center gap-1">
-                              <span className="w-3 h-3 bg-green-500 rounded"></span>
-                              {statusCounts.answered}
-                            </span>
-                            <span className="flex items-center gap-1">
-                              <span className="w-3 h-3 bg-red-500 rounded"></span>
-                              {statusCounts.notAnswered + statusCounts.notVisited}
-                            </span>
-                            <span className="flex items-center gap-1">
-                              <span className="w-3 h-3 bg-purple-500 rounded"></span>
-                              {statusCounts.markedForReview}
-                            </span>
-                          </div>
-                        </div>
-                        <ChevronRight className="h-5 w-5 transition-transform group-open:rotate-90" />
-                      </div>
-                    </CardContent>
-                  </Card>
-                </summary>
-                <Card className="rounded-xl mt-2 bg-[#F9F6F2] dark:bg-[#1a1a1a] border-2 border-black dark:border-white">
-                  <CardContent className="py-3">
-                    <div className="grid grid-cols-8 gap-1.5 max-h-[200px] overflow-y-auto">
-                      {questions.map((_, index) => (
-                        <Button
-                          key={index}
-                          onClick={() => goToQuestion(index)}
-                          className={getQuestionButtonClass(index).replace('w-10 h-10', 'w-8 h-8 text-xs')}
-                          variant="ghost"
-                        >
-                          {index + 1}
-                        </Button>
-                      ))}
+              <Card className="rounded-xl bg-[#F9F6F2] dark:bg-[#1a1a1a] border-2 border-black dark:border-white">
+                <CardContent className="py-3 px-3">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-sm font-semibold">Question Palette</span>
+                    <div className="flex items-center gap-2 text-xs">
+                      <span className="flex items-center gap-1">
+                        <span className="w-3 h-3 bg-green-500 rounded"></span>
+                        {statusCounts.answered}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <span className="w-3 h-3 bg-red-500 rounded"></span>
+                        {statusCounts.notAnswered + statusCounts.notVisited}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <span className="w-3 h-3 bg-purple-500 rounded"></span>
+                        {statusCounts.markedForReview}
+                      </span>
                     </div>
-                    <Button
-                      onClick={handleSubmitClick}
-                      className="w-full mt-3 bg-gradient-to-r from-emerald-400 to-teal-500 hover:from-emerald-500 hover:to-teal-600 text-white border-2 border-black font-semibold py-3"
-                    >
-                      Submit Test
-                    </Button>
-                  </CardContent>
-                </Card>
-              </details>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {questions.map((_, index) => (
+                      <Button
+                        key={index}
+                        onClick={() => goToQuestion(index)}
+                        className={getQuestionButtonClass(index).replace('w-10 h-10', 'w-8 h-8 text-xs')}
+                        variant="ghost"
+                      >
+                        {index + 1}
+                      </Button>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
             </div>
             
             {/* Desktop: Always visible */}
