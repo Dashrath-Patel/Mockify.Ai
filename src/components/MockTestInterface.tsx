@@ -376,22 +376,22 @@ export function MockTestInterface({
         className="sticky top-0 z-50 bg-[#F9F6F2] dark:bg-[#1a1a1a] border-b-[3px] border-black dark:border-white shadow-sm"
       >
         <div className="max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8 py-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <FileText className="h-6 w-6 text-black dark:text-white" />
-              <div>
-                <h1 className="text-lg font-bold text-gray-900 dark:text-white">{testTitle}</h1>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Question {currentQuestion + 1} of {questions.length}
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 sm:gap-4 min-w-0 flex-1">
+              <FileText className="h-5 w-5 sm:h-6 sm:w-6 text-black dark:text-white flex-shrink-0" />
+              <div className="min-w-0">
+                <h1 className="text-sm sm:text-lg font-bold text-gray-900 dark:text-white truncate">{testTitle}</h1>
+                <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
+                  Q {currentQuestion + 1}/{questions.length}
                 </p>
               </div>
             </div>
             
-            <div className="flex items-center gap-6">
+            <div className="flex items-center gap-2 sm:gap-6 flex-shrink-0">
               {/* Timer */}
-              <div className="flex items-center gap-2">
-                <Clock className={`h-5 w-5 ${getTimeColor()}`} />
-                <span className={`text-2xl font-bold tabular-nums ${getTimeColor()}`}>
+              <div className="flex items-center gap-1 sm:gap-2">
+                <Clock className={`h-4 w-4 sm:h-5 sm:w-5 ${getTimeColor()}`} />
+                <span className={`text-lg sm:text-2xl font-bold tabular-nums ${getTimeColor()}`}>
                   {formatTime(timeLeft)}
                 </span>
               </div>
@@ -414,23 +414,21 @@ export function MockTestInterface({
       </motion.div>
 
       {/* Main Content */}
-      <div className="max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
+      <div className="max-w-[1920px] mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6">
+        <div className="flex flex-col xl:grid xl:grid-cols-4 gap-4 sm:gap-6">
           {/* Left Column - Question */}
-          <div className="xl:col-span-3 space-y-4">
+          <div className="xl:col-span-3 space-y-3 sm:space-y-4 order-1">
             {/* Section Info */}
-            <div className="flex items-center gap-4 text-sm">
-              <span className="px-3 py-1 bg-gradient-to-r from-violet-400 to-purple-500 text-white rounded-full font-medium shadow-lg">
+            <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm">
+              <span className="px-2 sm:px-3 py-1 bg-gradient-to-r from-violet-400 to-purple-500 text-white rounded-full font-medium shadow-lg text-xs sm:text-sm">
                 SECTION: Test
               </span>
-              <div className="flex items-center gap-3 text-gray-600 dark:text-gray-400">
+              <div className="flex items-center gap-2 sm:gap-3 text-gray-600 dark:text-gray-400">
                 <span className="flex items-center gap-1">
                   <span className="font-semibold text-[#86EFAC] dark:text-[#6EE7B7]">+{positiveMarking}</span>
-                  <span>Marks</span>
                 </span>
                 <span className="flex items-center gap-1">
                   <span className="font-semibold text-[#EF4444]">-{negativeMarking}</span>
-                  <span>Negative</span>
                 </span>
               </div>
             </div>
@@ -496,38 +494,43 @@ export function MockTestInterface({
 
             {/* Navigation Buttons */}
             <Card className="border-2 border-gray-200 dark:border-slate-800">
-              <CardContent className="py-4">
-                <div className="flex items-center justify-between gap-4">
-                  <div className="flex items-center gap-2">
+              <CardContent className="py-3 sm:py-4 px-3 sm:px-6">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4">
+                  <div className="flex items-center gap-2 order-2 sm:order-1">
                     <Button
                       variant="outline"
                       onClick={handleMarkForReview}
-                      className="flex items-center gap-2"
+                      size="sm"
+                      className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm flex-1 sm:flex-none"
                     >
-                      <Flag className="h-4 w-4" />
-                      Mark for Review
+                      <Flag className="h-3 w-3 sm:h-4 sm:w-4" />
+                      <span className="hidden xs:inline">Mark</span>
+                      <span className="xs:hidden">📌</span>
                     </Button>
                     <Button
                       variant="outline"
                       onClick={handleSkipQuestion}
-                      className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+                      size="sm"
+                      className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white flex-1 sm:flex-none"
                     >
-                      <SkipForward className="h-4 w-4" />
+                      <SkipForward className="h-3 w-3 sm:h-4 sm:w-4" />
                       Skip
                     </Button>
-                  </div>
-                  
-                  <div className="flex items-center gap-3">
                     <Button
                       variant="outline"
                       onClick={handleClearResponse}
                       disabled={!selectedAnswer}
+                      size="sm"
+                      className="text-xs sm:text-sm flex-1 sm:flex-none"
                     >
-                      Clear Response
+                      Clear
                     </Button>
+                  </div>
+                  
+                  <div className="flex items-center gap-2 sm:gap-3 order-1 sm:order-2">
                     <Button
                       onClick={handleSaveAndNext}
-                      className="bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-500 hover:to-orange-600 text-white border-2 border-black font-bold"
+                      className="bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-500 hover:to-orange-600 text-white border-2 border-black font-bold flex-1 sm:flex-none text-sm sm:text-base"
                     >
                       Save & Next
                     </Button>
@@ -538,8 +541,63 @@ export function MockTestInterface({
           </div>
 
           {/* Right Column - Question Palette */}
-          <div className="xl:col-span-1">
-            <div className="sticky top-24 space-y-4">
+          <div className="xl:col-span-1 order-2 xl:order-2">
+            {/* Mobile: Collapsible Question Palette */}
+            <div className="xl:hidden">
+              <details className="group">
+                <summary className="list-none cursor-pointer">
+                  <Card className="rounded-xl bg-[#F9F6F2] dark:bg-[#1a1a1a] border-2 border-black dark:border-white">
+                    <CardContent className="py-3 px-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <span className="text-sm font-semibold">Question Palette</span>
+                          <div className="flex items-center gap-2 text-xs">
+                            <span className="flex items-center gap-1">
+                              <span className="w-3 h-3 bg-green-500 rounded"></span>
+                              {statusCounts.answered}
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <span className="w-3 h-3 bg-red-500 rounded"></span>
+                              {statusCounts.notAnswered + statusCounts.notVisited}
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <span className="w-3 h-3 bg-purple-500 rounded"></span>
+                              {statusCounts.markedForReview}
+                            </span>
+                          </div>
+                        </div>
+                        <ChevronRight className="h-5 w-5 transition-transform group-open:rotate-90" />
+                      </div>
+                    </CardContent>
+                  </Card>
+                </summary>
+                <Card className="rounded-xl mt-2 bg-[#F9F6F2] dark:bg-[#1a1a1a] border-2 border-black dark:border-white">
+                  <CardContent className="py-3">
+                    <div className="grid grid-cols-8 gap-1.5 max-h-[200px] overflow-y-auto">
+                      {questions.map((_, index) => (
+                        <Button
+                          key={index}
+                          onClick={() => goToQuestion(index)}
+                          className={getQuestionButtonClass(index).replace('w-10 h-10', 'w-8 h-8 text-xs')}
+                          variant="ghost"
+                        >
+                          {index + 1}
+                        </Button>
+                      ))}
+                    </div>
+                    <Button
+                      onClick={handleSubmitClick}
+                      className="w-full mt-3 bg-gradient-to-r from-emerald-400 to-teal-500 hover:from-emerald-500 hover:to-teal-600 text-white border-2 border-black font-semibold py-3"
+                    >
+                      Submit Test
+                    </Button>
+                  </CardContent>
+                </Card>
+              </details>
+            </div>
+            
+            {/* Desktop: Always visible */}
+            <div className="hidden xl:block sticky top-24 space-y-4">
               {/* Status Legend */}
               <Card className="rounded-2xl bg-[#F9F6F2] dark:bg-[#1a1a1a] border-[3px] border-black dark:border-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]">
                 <CardHeader>

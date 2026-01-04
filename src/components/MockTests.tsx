@@ -959,17 +959,17 @@ export function MockTests() {
   }
 
   return (
-    <div className="p-4 md:p-6 lg:p-8 max-w-[1600px] mx-auto space-y-6">
+    <div className="p-3 sm:p-4 md:p-6 lg:p-8 max-w-[1600px] mx-auto space-y-4 sm:space-y-6">
       {/* Full-screen loading overlay for generating questions */}
       <GeneratingOverlay />
       
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="mb-8"
+        className="mb-4 sm:mb-8"
       >
-        <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-2">Generate Test</h1>
-        <p className="text-gray-600 dark:text-gray-400 text-base">Create AI-powered tests tailored to your needs</p>
+        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-1 sm:mb-2">Generate Test</h1>
+        <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">Create AI-powered tests tailored to your needs</p>
       </motion.div>
 
       <motion.div
@@ -981,16 +981,16 @@ export function MockTests() {
           <div>
             <div className="relative group">
               <div className="absolute -inset-0.5 bg-linear-to-r from-violet-600 to-blue-600 rounded-2xl opacity-20 group-hover:opacity-40 blur transition duration-300"></div>
-              <Card className="relative rounded-2xl bg-white dark:bg-black/40 border-2 border-gray-200 dark:border-slate-800/50 shadow-md hover:shadow-xl dark:shadow-2xl transition-shadow duration-300">
-                <CardHeader>
-                  <CardTitle className="text-gray-900 dark:text-white flex items-center gap-2">
-                    <Brain className="h-5 w-5 text-black dark:text-white" />
+              <Card className="relative rounded-xl sm:rounded-2xl bg-white dark:bg-black/40 border-2 border-gray-200 dark:border-slate-800/50 shadow-md hover:shadow-xl dark:shadow-2xl transition-shadow duration-300">
+                <CardHeader className="p-4 sm:p-6">
+                  <CardTitle className="text-gray-900 dark:text-white flex items-center gap-2 text-base sm:text-lg">
+                    <Brain className="h-4 w-4 sm:h-5 sm:w-5 text-black dark:text-white" />
                     Topic-wise Practice Test
                   </CardTitle>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Focus on specific topics to strengthen your knowledge</p>
+                  <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Focus on specific topics to strengthen your knowledge</p>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <CardContent className="space-y-4 p-4 sm:p-6 pt-0 sm:pt-0">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                     {/* Multi-Select Materials */}
                     <div className="space-y-2">
                       <label className="text-sm text-gray-700 dark:text-gray-300 font-semibold flex items-center gap-2">
@@ -1264,9 +1264,9 @@ export function MockTests() {
                     </p>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <label htmlFor="question-count-input" className="text-sm text-gray-700 dark:text-gray-300 font-semibold">Number of Questions</label>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+                    <div className="space-y-1 sm:space-y-2">
+                      <label htmlFor="question-count-input" className="text-xs sm:text-sm text-gray-700 dark:text-gray-300 font-semibold">Questions</label>
                       <Input
                         id="question-count-input"
                         type="text"
@@ -1297,8 +1297,8 @@ export function MockTests() {
                       <p className="text-xs text-gray-500 dark:text-gray-400">Min: 5, Max: 50 questions</p>
                     </div>
                     
-                    <div className="space-y-2">
-                      <label htmlFor="duration-input" className="text-sm text-gray-700 dark:text-gray-300 font-semibold">Test Duration (minutes)</label>
+                    <div className="space-y-1 sm:space-y-2">
+                      <label htmlFor="duration-input" className="text-xs sm:text-sm text-gray-700 dark:text-gray-300 font-semibold">Duration (min)</label>
                       <Input
                         id="duration-input"
                         type="text"
@@ -1326,11 +1326,11 @@ export function MockTests() {
                         }}
                         className="rounded-lg bg-white dark:bg-slate-800/50 border-2 border-gray-300 dark:border-slate-700 text-gray-900 dark:text-gray-200"
                       />
-                      <p className="text-xs text-gray-500 dark:text-gray-400">Min: 10, Max: 180 minutes</p>
+                      <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400">10-180 min</p>
                     </div>
                     
-                    <div className="space-y-2">
-                      <label htmlFor="positive-marking-input" className="text-sm text-gray-700 dark:text-gray-300 font-semibold">Positive Marking (per correct answer)</label>
+                    <div className="space-y-1 sm:space-y-2">
+                      <label htmlFor="positive-marking-input" className="text-xs sm:text-sm text-gray-700 dark:text-gray-300 font-semibold">+ve Marks</label>
                       <Input
                         id="positive-marking-input"
                         type="text"
@@ -1362,11 +1362,11 @@ export function MockTests() {
                         }}
                         className="rounded-lg bg-white dark:bg-slate-800/50 border-2 border-gray-300 dark:border-slate-700 text-gray-900 dark:text-gray-200"
                       />
-                      <p className="text-xs text-gray-500 dark:text-gray-400">Min: 1, Max: 10 marks</p>
+                      <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400">1-10 marks</p>
                     </div>
                     
-                    <div className="space-y-2">
-                      <label htmlFor="negative-marking-input" className="text-sm text-gray-700 dark:text-gray-300 font-semibold">Negative Marking (per wrong answer)</label>
+                    <div className="space-y-1 sm:space-y-2">
+                      <label htmlFor="negative-marking-input" className="text-xs sm:text-sm text-gray-700 dark:text-gray-300 font-semibold">-ve Marks</label>
                       <Input
                         id="negative-marking-input"
                         type="text"
@@ -1398,21 +1398,23 @@ export function MockTests() {
                         }}
                         className="rounded-lg bg-white dark:bg-slate-800/50 border-2 border-gray-300 dark:border-slate-700 text-gray-900 dark:text-gray-200"
                       />
-                      <p className="text-xs text-gray-500 dark:text-gray-400">0 = No negative marking, Max: 2</p>
+                      <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400">0-2 marks</p>
                     </div>
                   </div>
 
-                  <div className="bg-violet-50 dark:bg-violet-600/10 p-4 rounded-xl border-2 border-violet-200 dark:border-violet-500/30">
-                    <div className="flex items-start gap-3">
-                      <AlertCircle className="h-5 w-5 text-black dark:text-white mt-0.5" />
-                      <div>
-                        <p className="text-sm text-gray-900 dark:text-white font-semibold">Test Details</p>
-                        <p className="text-sm text-gray-700 dark:text-gray-400 mt-1">
-                          • {questionCount} Questions<br />
-                          • {testDuration} Minutes Duration<br />
-                          • +{positiveMarking} per correct, {negativeMarking > 0 ? `-${negativeMarking} per wrong` : 'No negative marking'}<br />
-                          • AI-Generated from {selectedMaterials.length > 0 ? `${selectedMaterials.length} material${selectedMaterials.length > 1 ? 's' : ''}` : 'your uploaded materials'}
-                        </p>
+                  <div className="bg-violet-50 dark:bg-violet-600/10 p-3 sm:p-4 rounded-xl border-2 border-violet-200 dark:border-violet-500/30">
+                    <div className="flex items-start gap-2 sm:gap-3">
+                      <AlertCircle className="h-4 w-4 sm:h-5 sm:w-5 text-black dark:text-white mt-0.5 flex-shrink-0" />
+                      <div className="min-w-0">
+                        <p className="text-xs sm:text-sm text-gray-900 dark:text-white font-semibold">Test Details</p>
+                        <div className="text-xs sm:text-sm text-gray-700 dark:text-gray-400 mt-1 grid grid-cols-2 gap-x-4 gap-y-1 sm:block">
+                          <span>• {questionCount} Questions</span>
+                          <span className="sm:hidden">• {testDuration} min</span>
+                          <span className="hidden sm:inline"><br />• {testDuration} Minutes Duration</span>
+                          <span>• +{positiveMarking}/-{negativeMarking}</span>
+                          <span className="col-span-2 sm:hidden">• AI-Generated</span>
+                          <span className="hidden sm:inline"><br />• AI-Generated from {selectedMaterials.length > 0 ? `${selectedMaterials.length} material${selectedMaterials.length > 1 ? 's' : ''}` : 'materials'}</span>
+                        </div>
                       </div>
                     </div>
                   </div>

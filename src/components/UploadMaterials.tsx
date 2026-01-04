@@ -554,7 +554,7 @@ export function UploadMaterials() {
         )}
       </AnimatePresence>
 
-      <div className="p-4 md:p-6 lg:p-8 max-w-[1600px] mx-auto space-y-6">
+      <div className="p-3 sm:p-4 md:p-6 lg:p-8 max-w-[1600px] mx-auto space-y-4 sm:space-y-6">
         {/* Full-screen uploading overlay */}
         {uploading && (
           <div className="fixed inset-0 bg-white/95 dark:bg-[#030213]/95 z-50 flex items-center justify-center">
@@ -563,20 +563,20 @@ export function UploadMaterials() {
               animate={{ opacity: 1, scale: 1 }}
               className="text-center max-w-sm mx-4"
             >
-              <div className="relative mx-auto w-20 h-20 mb-6">
+              <div className="relative mx-auto w-16 h-16 sm:w-20 sm:h-20 mb-4 sm:mb-6">
                 <div className="absolute inset-0 rounded-full border-4 border-gray-100 dark:border-gray-800"></div>
                 <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-blue-500 dark:border-t-cyan-400 animate-spin"></div>
                 <div className="absolute inset-3 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center">
-                  <CloudUpload className="w-6 h-6 text-white" />
+                  <CloudUpload className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                 </div>
               </div>
-              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+              <h3 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-2">
                 Uploading Material
               </h3>
-              <p className="text-gray-500 dark:text-gray-400 text-sm mb-4">
-                Processing your file and extracting content...
+              <p className="text-gray-500 dark:text-gray-400 text-xs sm:text-sm mb-4">
+                Processing your file...
               </p>
-              <div className="w-48 mx-auto">
+              <div className="w-40 sm:w-48 mx-auto">
                 <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
                   <motion.div
                     className="h-full bg-gradient-to-r from-blue-500 to-cyan-500"
@@ -594,19 +594,19 @@ export function UploadMaterials() {
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-8"
+          className="mb-4 sm:mb-8"
         >
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div className="flex flex-col gap-3 sm:gap-4">
           <div>
-            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-2">Upload Study Materials</h1>
-            <p className="text-gray-600 dark:text-gray-400 text-base">Upload and organize your study materials for AI-powered test generation</p>
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-1 sm:mb-2">Upload Materials</h1>
+            <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">Upload and organize your study materials</p>
           </div>
           {materials.length > 0 && (
             <Link href="/dashboard/tests">
-              <Button className="bg-gradient-to-r from-orange-500 via-pink-500 to-purple-600 hover:from-orange-600 hover:via-pink-600 hover:to-purple-700 text-white font-semibold px-6 py-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 flex items-center gap-2 border border-white/20">
-                <Brain className="h-5 w-5" />
+              <Button className="w-full sm:w-auto bg-gradient-to-r from-orange-500 via-pink-500 to-purple-600 hover:from-orange-600 hover:via-pink-600 hover:to-purple-700 text-white font-semibold px-4 sm:px-6 py-2.5 sm:py-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center gap-2 border border-white/20">
+                <Brain className="h-4 w-4 sm:h-5 sm:w-5" />
                 Generate Test
-                <ArrowRight className="h-4 w-4" />
+                <ArrowRight className="h-3 w-3 sm:h-4 sm:w-4" />
               </Button>
             </Link>
           )}
@@ -641,11 +641,11 @@ export function UploadMaterials() {
           transition: { duration: 0.2 }
         }}
       >
-        <Card className="rounded-2xl bg-[#F9F6F2] dark:bg-[#1a1a1a] border-[3px] border-black dark:border-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] group-hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] dark:group-hover:shadow-[6px_6px_0px_0px_rgba(255,255,255,1)] transition-all duration-200">
-          <CardHeader>
-            <CardTitle className="text-black dark:text-white font-bold">Upload New Material</CardTitle>
+        <Card className="rounded-xl sm:rounded-2xl bg-[#F9F6F2] dark:bg-[#1a1a1a] border-2 sm:border-[3px] border-black dark:border-white shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[3px_3px_0px_0px_rgba(255,255,255,1)] sm:dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] group-hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] sm:group-hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] dark:group-hover:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] sm:dark:group-hover:shadow-[6px_6px_0px_0px_rgba(255,255,255,1)] transition-all duration-200">
+          <CardHeader className="p-4 sm:p-6">
+            <CardTitle className="text-black dark:text-white font-bold text-base sm:text-lg">Upload New Material</CardTitle>
           </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-3 sm:space-y-4 p-4 sm:p-6 pt-0 sm:pt-0">
               <input
                 ref={fileInputRef}
                 type="file"
@@ -659,17 +659,17 @@ export function UploadMaterials() {
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
                 onDrop={handleDrop}
-                className={`border-2 border-dashed rounded-xl p-8 text-center bg-gray-50 dark:bg-slate-800/30 hover:bg-gray-100 dark:hover:bg-slate-800/50 transition-all cursor-pointer ${
+                className={`border-2 border-dashed rounded-xl p-4 sm:p-8 text-center bg-gray-50 dark:bg-slate-800/30 hover:bg-gray-100 dark:hover:bg-slate-800/50 transition-all cursor-pointer ${
                   isDragging 
                     ? 'border-violet-500 dark:border-violet-600 bg-violet-50 dark:bg-violet-900/20' 
                     : 'border-gray-300 dark:border-slate-700 hover:border-violet-500 dark:hover:border-violet-600/50'
                 }`}
               >
-                <Upload className="h-12 w-12 mx-auto text-blue-600 dark:text-blue-400 mb-3" />
-                <p className="text-gray-900 dark:text-gray-200 mb-1 font-medium">
-                  {selectedFile ? selectedFile.name : 'Drag & drop files here or click to browse'}
+                <Upload className="h-8 w-8 sm:h-12 sm:w-12 mx-auto text-blue-600 dark:text-blue-400 mb-2 sm:mb-3" />
+                <p className="text-sm sm:text-base text-gray-900 dark:text-gray-200 mb-1 font-medium truncate px-2">
+                  {selectedFile ? selectedFile.name : 'Tap to upload or drag & drop'}
                 </p>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Supports PDF, DOCX (Max 10MB)</p>
+                <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">PDF, DOCX (Max 10MB)</p>
               </div>
 
               {/* AI Suggested Topics from Weak Areas */}
@@ -802,7 +802,59 @@ export function UploadMaterials() {
                   </div>
                 </div>
               ) : filteredMaterials.length > 0 ? (
-                <div className="border-2 border-black dark:border-white rounded-xl overflow-hidden bg-white dark:bg-[#2a2a2a] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,0.3)]">
+                <>
+                  {/* Mobile Card View */}
+                  <div className="sm:hidden space-y-3">
+                    {filteredMaterials.map((material) => {
+                      const isDeleting = deletingMaterials.has(material.id);
+                      return (
+                        <div 
+                          key={material.id}
+                          className={`p-3 bg-white dark:bg-[#2a2a2a] border-2 border-black dark:border-white rounded-xl shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,0.3)] ${isDeleting ? 'opacity-50' : 'opacity-100'}`}
+                        >
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="flex items-center gap-2 min-w-0 flex-1">
+                              <FileText className="h-5 w-5 text-black dark:text-white flex-shrink-0" />
+                              <div className="min-w-0">
+                                <p className="text-sm font-bold text-black dark:text-white truncate">{material.name}</p>
+                                <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                                  <span className="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 rounded">{material.type}</span>
+                                  <span>{material.date}</span>
+                                </div>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-1.5 flex-shrink-0">
+                              <Button 
+                                variant="ghost" 
+                                size="icon" 
+                                className="h-8 w-8 text-black dark:text-white border-2 border-black dark:border-white rounded-lg"
+                                onClick={() => handleView(material)}
+                                disabled={isDeleting}
+                              >
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                              <Button 
+                                variant="ghost" 
+                                size="icon" 
+                                className="h-8 w-8 text-black dark:text-white border-2 border-black dark:border-white rounded-lg"
+                                onClick={() => confirmDelete(material.id)}
+                                disabled={isDeleting}
+                              >
+                                {isDeleting ? (
+                                  <div className="h-4 w-4 border-2 border-black dark:border-white border-t-transparent dark:border-t-transparent rounded-full animate-spin" />
+                                ) : (
+                                  <Trash2 className="h-4 w-4" />
+                                )}
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  
+                  {/* Desktop Table View */}
+                  <div className="hidden sm:block border-2 border-black dark:border-white rounded-xl overflow-hidden bg-white dark:bg-[#2a2a2a] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,0.3)]">
                   <Table>
                     <TableHeader>
                       <TableRow className="border-black dark:border-white">
@@ -866,6 +918,7 @@ export function UploadMaterials() {
                     </TableBody>
                   </Table>
                 </div>
+                </>
               ) : (
                 <div className="border-2 border-dashed border-gray-300 dark:border-slate-700 rounded-xl p-12 text-center bg-gray-50 dark:bg-slate-800/30">
                   <FileText className="h-16 w-16 mx-auto text-gray-400 dark:text-gray-600 mb-4" />

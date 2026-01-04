@@ -309,15 +309,15 @@ export function TestHistory() {
   };
 
   return (
-    <div className="p-4 md:p-6 lg:p-8 max-w-[1600px] mx-auto space-y-6">
+    <div className="p-3 sm:p-4 md:p-6 lg:p-8 max-w-[1600px] mx-auto space-y-4 sm:space-y-6">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="mb-8"
+        className="mb-4 sm:mb-8"
       >
-        <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-2">Test Warehouse</h1>
-        <p className="text-gray-600 dark:text-gray-400 text-base">View and manage your saved tests and scheduled tests</p>
+        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-1 sm:mb-2">Test Warehouse</h1>
+        <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">View and manage your saved tests</p>
       </motion.div>
 
       {/* Stats Cards */}
@@ -325,49 +325,49 @@ export function TestHistory() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
-        className="grid grid-cols-1 sm:grid-cols-3 gap-4"
+        className="grid grid-cols-3 gap-2 sm:gap-4"
       >
         <Card className="border border-gray-200 dark:border-gray-800">
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-4">
-              <div className="p-3 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600">
-                <FileText className="h-6 w-6 text-white" />
+          <CardContent className="p-3 sm:pt-6 sm:p-6">
+            <div className="flex flex-col sm:flex-row items-center sm:items-center gap-2 sm:gap-4 text-center sm:text-left">
+              <div className="p-2 sm:p-3 rounded-lg sm:rounded-xl bg-gradient-to-br from-violet-500 to-purple-600">
+                <FileText className="h-4 w-4 sm:h-6 sm:w-6 text-white" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">{savedTests.length}</p>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Total Tests</p>
+                <p className="text-lg sm:text-2xl font-bold text-gray-900 dark:text-white">{savedTests.length}</p>
+                <p className="text-[10px] sm:text-sm text-gray-500 dark:text-gray-400">Tests</p>
               </div>
             </div>
           </CardContent>
         </Card>
         
         <Card className="border border-gray-200 dark:border-gray-800">
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-4">
-              <div className="p-3 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-600">
-                <Brain className="h-6 w-6 text-white" />
+          <CardContent className="p-3 sm:pt-6 sm:p-6">
+            <div className="flex flex-col sm:flex-row items-center sm:items-center gap-2 sm:gap-4 text-center sm:text-left">
+              <div className="p-2 sm:p-3 rounded-lg sm:rounded-xl bg-gradient-to-br from-blue-500 to-cyan-600">
+                <Brain className="h-4 w-4 sm:h-6 sm:w-6 text-white" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                <p className="text-lg sm:text-2xl font-bold text-gray-900 dark:text-white">
                   {savedTests.reduce((acc, t) => acc + t.questions.length, 0)}
                 </p>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Total Questions</p>
+                <p className="text-[10px] sm:text-sm text-gray-500 dark:text-gray-400">Questions</p>
               </div>
             </div>
           </CardContent>
         </Card>
         
         <Card className="border border-gray-200 dark:border-gray-800">
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-4">
-              <div className="p-3 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600">
-                <Clock className="h-6 w-6 text-white" />
+          <CardContent className="p-3 sm:pt-6 sm:p-6">
+            <div className="flex flex-col sm:flex-row items-center sm:items-center gap-2 sm:gap-4 text-center sm:text-left">
+              <div className="p-2 sm:p-3 rounded-lg sm:rounded-xl bg-gradient-to-br from-amber-500 to-orange-600">
+                <Clock className="h-4 w-4 sm:h-6 sm:w-6 text-white" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                <p className="text-lg sm:text-2xl font-bold text-gray-900 dark:text-white">
                   {savedTests.reduce((acc, t) => acc + t.duration, 0)}
                 </p>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Total Minutes</p>
+                <p className="text-[10px] sm:text-sm text-gray-500 dark:text-gray-400">Minutes</p>
               </div>
             </div>
           </CardContent>
@@ -381,21 +381,21 @@ export function TestHistory() {
         transition={{ delay: 0.15 }}
       >
         <div className="relative">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+          <Search className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
           <Input
-            placeholder="Search tests by name, topic, or exam type..."
+            placeholder="Search tests..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-12 py-6 text-base rounded-xl border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900"
+            className="pl-10 sm:pl-12 py-4 sm:py-6 text-sm sm:text-base rounded-xl border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900"
           />
         </div>
         
         {/* Filter Dropdowns */}
-        <div className="flex flex-wrap gap-3 mt-4">
+        <div className="flex flex-wrap gap-2 sm:gap-3 mt-3 sm:mt-4">
           <Select value={filterExamType} onValueChange={setFilterExamType}>
-            <SelectTrigger className="w-[180px] border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
-              <Filter className="h-4 w-4 mr-2 text-gray-500" />
-              <SelectValue placeholder="Exam Type" />
+            <SelectTrigger className="w-[140px] sm:w-[180px] border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm">
+              <Filter className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2 text-gray-500" />
+              <SelectValue placeholder="Exam" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Exam Types</SelectItem>
@@ -406,8 +406,8 @@ export function TestHistory() {
           </Select>
           
           <Select value={filterStatus} onValueChange={setFilterStatus}>
-            <SelectTrigger className="w-[180px] border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
-              <Calendar className="h-4 w-4 mr-2 text-gray-500" />
+            <SelectTrigger className="w-[130px] sm:w-[180px] border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm">
+              <Calendar className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2 text-gray-500" />
               <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent>
@@ -426,9 +426,9 @@ export function TestHistory() {
                 setFilterStatus('all');
                 setSearchQuery('');
               }}
-              className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+              className="text-xs sm:text-sm text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 px-2 sm:px-4"
             >
-              Clear Filters
+              Clear
             </Button>
           )}
         </div>
@@ -471,13 +471,13 @@ export function TestHistory() {
             </CardContent>
           </Card>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
             {filteredTests.map((test, index) => (
               <motion.div
                 key={test.id}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.05 * index }}
+                transition={{ delay: 0.03 * Math.min(index, 10) }}
                 className="h-full"
               >
                 <Card className="group h-full flex flex-col hover:shadow-lg transition-all duration-300 border border-gray-200 dark:border-gray-800 hover:border-[#030213] dark:hover:border-purple-500 overflow-hidden">
