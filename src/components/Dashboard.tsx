@@ -571,41 +571,41 @@ export function Dashboard() {
   }, [supabase, fetchDashboardStats, fetchPerformanceData, fetchTopicDistribution, fetchUpcomingTests, fetchRecentActivity, calculateStudyStreak]);
 
   return (
-    <div className="p-4 md:p-6 lg:p-8 max-w-[1600px] mx-auto space-y-6 relative">
+    <div className="p-3 sm:p-4 md:p-6 lg:p-8 max-w-[1600px] mx-auto space-y-4 sm:space-y-6 relative">
       {/* Welcome Header */}
       <motion.div 
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8"
+        className="flex flex-col gap-3 sm:gap-4 mb-4 sm:mb-8"
       >
         <div>
-          <h1 className="text-3xl md:text-4xl font-bold mb-2">
+          <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold mb-1 sm:mb-2">
             <span className="text-gray-900 dark:text-white">Welcome back, </span>
             {isLoading ? (
-              <span className="inline-block h-8 w-32 bg-gray-200 dark:bg-gray-700 animate-pulse rounded-lg" />
+              <span className="inline-block h-6 sm:h-8 w-24 sm:w-32 bg-gray-200 dark:bg-gray-700 animate-pulse rounded-lg" />
             ) : (
               <span className="bg-linear-to-r from-violet-600 to-blue-600 dark:from-violet-400 dark:to-blue-400 bg-clip-text text-transparent">
                 {userName}
               </span>
             )}
-            <span className="ml-2">👋</span>
+            <span className="ml-1 sm:ml-2">👋</span>
           </h1>
-          <p className="text-gray-600 dark:text-gray-400 text-base">Here's your learning progress overview for today</p>
+          <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">Here's your learning progress overview</p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
           {isLoading ? (
             <>
-              <div className="h-9 w-32 bg-gray-200 dark:bg-gray-700 animate-pulse rounded-lg" />
-              <div className="h-9 w-32 bg-gray-200 dark:bg-gray-700 animate-pulse rounded-lg" />
+              <div className="h-7 sm:h-9 w-24 sm:w-32 bg-gray-200 dark:bg-gray-700 animate-pulse rounded-lg" />
+              <div className="h-7 sm:h-9 w-24 sm:w-32 bg-gray-200 dark:bg-gray-700 animate-pulse rounded-lg" />
             </>
           ) : (
             <>
-              <Badge className="bg-linear-to-r from-violet-600 to-purple-600 text-white px-4 py-2 border-0 shadow-lg">
-                <Target className="h-3 w-3 mr-2" />
+              <Badge className="bg-linear-to-r from-violet-600 to-purple-600 text-white px-3 sm:px-4 py-1.5 sm:py-2 border-0 shadow-lg text-xs sm:text-sm">
+                <Target className="h-3 w-3 mr-1 sm:mr-2" />
                 {examType} 2025
               </Badge>
-              <Badge className="bg-white dark:bg-slate-800/50 backdrop-blur-sm border border-gray-200 dark:border-slate-700 text-gray-700 dark:text-gray-300 px-4 py-2 shadow-sm">
-                <Flame className="h-3 w-3 mr-2 text-orange-500" />
+              <Badge className="bg-white dark:bg-slate-800/50 backdrop-blur-sm border border-gray-200 dark:border-slate-700 text-gray-700 dark:text-gray-300 px-3 sm:px-4 py-1.5 sm:py-2 shadow-sm text-xs sm:text-sm">
+                <Flame className="h-3 w-3 mr-1 sm:mr-2 text-orange-500" />
                 {studyStreak} Day Streak
               </Badge>
             </>
@@ -618,7 +618,7 @@ export function Dashboard() {
         variants={containerVariants}
         initial="hidden"
         animate="show"
-        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"
+        className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4"
       >
         {[
           { 
@@ -665,16 +665,16 @@ export function Dashboard() {
                 transition: { duration: 0.2 }
               }}
             >
-              <Card className="relative rounded-2xl bg-[#F9F6F2] dark:bg-[#1a1a1a] border-[3px] border-black dark:border-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] group-hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] dark:group-hover:shadow-[6px_6px_0px_0px_rgba(255,255,255,1)] transition-all duration-200">
-                <CardContent className="pt-6">
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="space-y-1 flex-1">
-                      <p className="text-sm font-medium text-[#555555] dark:text-gray-400">{stat.title}</p>
-                      <p className="text-black dark:text-white text-3xl font-bold tracking-tight">{stat.value}</p>
-                      <p className="text-xs text-[#555555] dark:text-gray-500 font-medium">{stat.change}</p>
+              <Card className="relative rounded-xl sm:rounded-2xl bg-[#F9F6F2] dark:bg-[#1a1a1a] border-2 sm:border-[3px] border-black dark:border-white shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[3px_3px_0px_0px_rgba(255,255,255,1)] sm:dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] group-hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] sm:group-hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] dark:group-hover:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] sm:dark:group-hover:shadow-[6px_6px_0px_0px_rgba(255,255,255,1)] transition-all duration-200">
+                <CardContent className="p-3 sm:pt-6 sm:p-6">
+                  <div className="flex items-start justify-between mb-2 sm:mb-4">
+                    <div className="space-y-0.5 sm:space-y-1 flex-1 min-w-0">
+                      <p className="text-[10px] sm:text-sm font-medium text-[#555555] dark:text-gray-400 truncate">{stat.title}</p>
+                      <p className="text-black dark:text-white text-xl sm:text-3xl font-bold tracking-tight">{stat.value}</p>
+                      <p className="text-[9px] sm:text-xs text-[#555555] dark:text-gray-500 font-medium truncate">{stat.change}</p>
                     </div>
-                    <div className={`p-3 rounded-xl ${stat.iconBg} border-2 border-black dark:border-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,0.3)]`}>
-                      <Icon className={`h-5 w-5 ${stat.iconColor}`} />
+                    <div className={`p-2 sm:p-3 rounded-lg sm:rounded-xl ${stat.iconBg} border-2 border-black dark:border-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,0.3)] flex-shrink-0`}>
+                      <Icon className={`h-4 w-4 sm:h-5 sm:w-5 ${stat.iconColor}`} />
                     </div>
                   </div>
                 </CardContent>
@@ -685,9 +685,9 @@ export function Dashboard() {
       </motion.div>
 
       {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
         {/* Left Column - Calendar & Upcoming */}
-        <div className="lg:col-span-1 space-y-6">
+        <div className="lg:col-span-1 space-y-4 sm:space-y-6">
           {/* Calendar */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
@@ -699,14 +699,14 @@ export function Dashboard() {
               transition: { duration: 0.2 }
             }}
           >
-            <Card className="rounded-2xl bg-[#F9F6F2] dark:bg-[#1a1a1a] border-[3px] border-black dark:border-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] group-hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] dark:group-hover:shadow-[6px_6px_0px_0px_rgba(255,255,255,1)] transition-all duration-200 overflow-hidden">
-              <CardHeader className="bg-gradient-to-br from-amber-400 via-orange-500 to-red-500 dark:from-amber-500 dark:via-orange-600 dark:to-red-600 border-b-[3px] border-black dark:border-white">
-                <CardTitle className="text-black flex items-center gap-2 font-bold">
-                  <Calendar className="h-5 w-5 text-black" />
+            <Card className="rounded-xl sm:rounded-2xl bg-[#F9F6F2] dark:bg-[#1a1a1a] border-2 sm:border-[3px] border-black dark:border-white shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[3px_3px_0px_0px_rgba(255,255,255,1)] sm:dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] group-hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] sm:group-hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] dark:group-hover:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] sm:dark:group-hover:shadow-[6px_6px_0px_0px_rgba(255,255,255,1)] transition-all duration-200 overflow-hidden">
+              <CardHeader className="bg-gradient-to-br from-amber-400 via-orange-500 to-red-500 dark:from-amber-500 dark:via-orange-600 dark:to-red-600 border-b-2 sm:border-b-[3px] border-black dark:border-white p-3 sm:p-6">
+                <CardTitle className="text-black flex items-center gap-1.5 sm:gap-2 font-bold text-sm sm:text-base">
+                  <Calendar className="h-4 w-4 sm:h-5 sm:w-5 text-black" />
                   Study Calendar
                 </CardTitle>
               </CardHeader>
-              <CardContent className="p-4 md:p-6">
+              <CardContent className="p-3 sm:p-4 md:p-6">
                 <StudyCalendar />
               </CardContent>
             </Card>
@@ -723,20 +723,20 @@ export function Dashboard() {
               transition: { duration: 0.2 }
             }}
           >
-            <Card className="rounded-2xl bg-[#F9F6F2] dark:bg-[#1a1a1a] border-[3px] border-black dark:border-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] group-hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] dark:group-hover:shadow-[6px_6px_0px_0px_rgba(255,255,255,1)] transition-all duration-200">
-              <CardHeader>
-                <CardTitle className="text-black dark:text-white flex items-center justify-between font-bold">
-                  <span className="flex items-center gap-2">
-                    <Zap className="h-5 w-5 text-black dark:text-white" />
+            <Card className="rounded-xl sm:rounded-2xl bg-[#F9F6F2] dark:bg-[#1a1a1a] border-2 sm:border-[3px] border-black dark:border-white shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[3px_3px_0px_0px_rgba(255,255,255,1)] sm:dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] group-hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] sm:group-hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] dark:group-hover:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] sm:dark:group-hover:shadow-[6px_6px_0px_0px_rgba(255,255,255,1)] transition-all duration-200">
+              <CardHeader className="p-3 sm:p-6">
+                <CardTitle className="text-black dark:text-white flex items-center justify-between font-bold text-sm sm:text-base">
+                  <span className="flex items-center gap-1.5 sm:gap-2">
+                    <Zap className="h-4 w-4 sm:h-5 sm:w-5 text-black dark:text-white" />
                     Upcoming Tests
                   </span>
-                  <Button variant="ghost" size="sm" className="text-[#555555] dark:text-gray-400 h-8 font-medium">
+                  <Button variant="ghost" size="sm" className="text-[#555555] dark:text-gray-400 h-7 sm:h-8 text-xs sm:text-sm font-medium px-2 sm:px-3">
                     View All
-                    <ChevronRight className="h-4 w-4 ml-1" />
+                    <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4 ml-0.5 sm:ml-1" />
                   </Button>
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3">
+              <CardContent className="space-y-2 sm:space-y-3 p-3 pt-0 sm:p-6 sm:pt-0">
                 {upcomingTests.length > 0 ? upcomingTests.map((test, index) => (
                   <motion.div
                     key={test.id}
@@ -792,14 +792,14 @@ export function Dashboard() {
               transition: { duration: 0.2 }
             }}
           >
-            <Card className="rounded-2xl bg-[#F9F6F2] dark:bg-[#1a1a1a] border-[3px] border-black dark:border-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] group-hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] dark:group-hover:shadow-[6px_6px_0px_0px_rgba(255,255,255,1)] transition-all duration-200">
-              <CardHeader>
-                <CardTitle className="text-black dark:text-white flex items-center gap-2 font-bold">
-                  <Clock className="h-5 w-5 text-black dark:text-white" />
+            <Card className="rounded-xl sm:rounded-2xl bg-[#F9F6F2] dark:bg-[#1a1a1a] border-2 sm:border-[3px] border-black dark:border-white shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[3px_3px_0px_0px_rgba(255,255,255,1)] sm:dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] group-hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] sm:group-hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] dark:group-hover:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] sm:dark:group-hover:shadow-[6px_6px_0px_0px_rgba(255,255,255,1)] transition-all duration-200">
+              <CardHeader className="p-3 sm:p-6">
+                <CardTitle className="text-black dark:text-white flex items-center gap-1.5 sm:gap-2 font-bold text-sm sm:text-base">
+                  <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-black dark:text-white" />
                   Recent Activity
                 </CardTitle>
               </CardHeader>
-                <CardContent>
+                <CardContent className="p-3 pt-0 sm:p-6 sm:pt-0">
                   <div className="space-y-3">
                     {recentActivity.length > 0 ? recentActivity.map((activity, index) => (
                       <motion.div
@@ -851,28 +851,29 @@ export function Dashboard() {
               transition: { duration: 0.2 }
             }}
           >
-            <Card className="rounded-2xl bg-[#F9F6F2] dark:bg-[#1a1a1a] border-[3px] border-black dark:border-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] group-hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] dark:group-hover:shadow-[6px_6px_0px_0px_rgba(255,255,255,1)] transition-all duration-200">
-              <CardHeader>
-                <div className="flex items-center justify-between">
+            <Card className="rounded-xl sm:rounded-2xl bg-[#F9F6F2] dark:bg-[#1a1a1a] border-2 sm:border-[3px] border-black dark:border-white shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[3px_3px_0px_0px_rgba(255,255,255,1)] sm:dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] group-hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] sm:group-hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] dark:group-hover:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] sm:dark:group-hover:shadow-[6px_6px_0px_0px_rgba(255,255,255,1)] transition-all duration-200">
+              <CardHeader className="p-3 sm:p-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-0">
                   <div>
-                    <CardTitle className="text-black dark:text-white flex items-center gap-2 mb-1 font-bold">
-                      <BarChart3 className="h-5 w-5 text-black dark:text-white" />
+                    <CardTitle className="text-black dark:text-white flex items-center gap-1.5 sm:gap-2 mb-0.5 sm:mb-1 font-bold text-sm sm:text-base">
+                      <BarChart3 className="h-4 w-4 sm:h-5 sm:w-5 text-black dark:text-white" />
                       Weekly Performance
                     </CardTitle>
-                    <p className="text-sm text-[#555555] dark:text-gray-400 font-medium">Your score and study time trends</p>
+                    <p className="text-xs sm:text-sm text-[#555555] dark:text-gray-400 font-medium">Your score and study time trends</p>
                   </div>
-                  <div className="flex gap-2">
-                    <Badge variant="outline" className="bg-gradient-to-r from-violet-400 to-purple-500 border-[2px] border-black dark:border-white text-white font-bold shadow-lg">
+                  <div className="flex gap-1.5 sm:gap-2">
+                    <Badge variant="outline" className="bg-gradient-to-r from-violet-400 to-purple-500 border sm:border-[2px] border-black dark:border-white text-white font-bold shadow-lg text-[10px] sm:text-xs px-2 py-0.5 sm:px-3 sm:py-1">
                       Score
                     </Badge>
-                    <Badge variant="outline" className="bg-gradient-to-r from-amber-400 to-orange-500 border-[2px] border-black dark:border-white text-white font-bold shadow-lg">
+                    <Badge variant="outline" className="bg-gradient-to-r from-amber-400 to-orange-500 border sm:border-[2px] border-black dark:border-white text-white font-bold shadow-lg text-[10px] sm:text-xs px-2 py-0.5 sm:px-3 sm:py-1">
                       Time
                     </Badge>
                   </div>
                 </div>
                 </CardHeader>
-                <CardContent>
-                  <ResponsiveContainer width="100%" height={280}>
+                <CardContent className="p-3 pt-0 sm:p-6 sm:pt-0">
+                  <div className="h-[200px] sm:h-[280px]">
+                  <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={performanceData}>
                       <defs>
                         <linearGradient id="scoreGradient" x1="0" y1="0" x2="0" y2="1">
@@ -915,12 +916,13 @@ export function Dashboard() {
                       />
                     </LineChart>
                   </ResponsiveContainer>
+                  </div>
                 </CardContent>
               </Card>
           </motion.div>
 
           {/* Subject Distribution & Study Goals */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
             {/* Subject Distribution */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -932,14 +934,14 @@ export function Dashboard() {
                 transition: { duration: 0.2 }
               }}
             >
-              <Card className="rounded-2xl bg-[#F9F6F2] dark:bg-[#1a1a1a] border-[3px] border-black dark:border-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] group-hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] dark:group-hover:shadow-[6px_6px_0px_0px_rgba(255,255,255,1)] transition-all duration-200 h-full">
-                <CardHeader>
-                  <CardTitle className="text-black dark:text-white flex items-center gap-2 font-bold">
-                    <Brain className="h-5 w-5 text-black dark:text-white" />
+              <Card className="rounded-xl sm:rounded-2xl bg-[#F9F6F2] dark:bg-[#1a1a1a] border-2 sm:border-[3px] border-black dark:border-white shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[3px_3px_0px_0px_rgba(255,255,255,1)] sm:dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] group-hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] sm:group-hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] dark:group-hover:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] sm:dark:group-hover:shadow-[6px_6px_0px_0px_rgba(255,255,255,1)] transition-all duration-200 h-full">
+                <CardHeader className="p-3 sm:p-6">
+                  <CardTitle className="text-black dark:text-white flex items-center gap-1.5 sm:gap-2 font-bold text-sm sm:text-base">
+                    <Brain className="h-4 w-4 sm:h-5 sm:w-5 text-black dark:text-white" />
                     Focus Areas
                   </CardTitle>
                 </CardHeader>
-                  <CardContent>
+                  <CardContent className="p-3 pt-0 sm:p-6 sm:pt-0">
                     {subjectData.length > 0 ? (
                       <>
                         <div className="flex items-center justify-center mb-4">
@@ -995,14 +997,14 @@ export function Dashboard() {
                 transition: { duration: 0.2 }
               }}
             >
-              <Card className="rounded-2xl bg-[#F9F6F2] dark:bg-[#1a1a1a] border-[3px] border-black dark:border-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] group-hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] dark:group-hover:shadow-[6px_6px_0px_0px_rgba(255,255,255,1)] transition-all duration-200 h-full">
-                <CardHeader>
-                  <CardTitle className="text-black dark:text-white flex items-center gap-2 font-bold">
-                    <Target className="h-5 w-5 text-black dark:text-white" />
+              <Card className="rounded-xl sm:rounded-2xl bg-[#F9F6F2] dark:bg-[#1a1a1a] border-2 sm:border-[3px] border-black dark:border-white shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[3px_3px_0px_0px_rgba(255,255,255,1)] sm:dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] group-hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] sm:group-hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] dark:group-hover:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] sm:dark:group-hover:shadow-[6px_6px_0px_0px_rgba(255,255,255,1)] transition-all duration-200 h-full">
+                <CardHeader className="p-3 sm:p-6">
+                  <CardTitle className="text-black dark:text-white flex items-center gap-1.5 sm:gap-2 font-bold text-sm sm:text-base">
+                    <Target className="h-4 w-4 sm:h-5 sm:w-5 text-black dark:text-white" />
                     Weekly Goals
                   </CardTitle>
                 </CardHeader>
-                  <CardContent className="space-y-4">
+                  <CardContent className="space-y-3 sm:space-y-4 p-3 pt-0 sm:p-6 sm:pt-0">
                     {weeklyGoals.map((item, index) => (
                       <div key={index} className="space-y-2">
                         <div className="flex items-center justify-between text-sm">
