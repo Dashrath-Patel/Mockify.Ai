@@ -250,7 +250,7 @@ export function AITutorChat({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl h-[85vh] flex flex-col p-0 gap-0 overflow-hidden bg-background border border-border shadow-xl rounded-xl">
+      <DialogContent className="w-[95vw] sm:max-w-2xl h-[90vh] sm:h-[85vh] flex flex-col p-0 gap-0 overflow-hidden bg-background border border-border shadow-xl rounded-xl mx-auto">
         {/* Accessibility: Hidden title and description for screen readers */}
         <VisuallyHidden>
           <DialogTitle>ExamSensei AI Tutor</DialogTitle>
@@ -258,15 +258,15 @@ export function AITutorChat({
         </VisuallyHidden>
         
         {/* Header - Simple dark theme */}
-        <div className="bg-primary text-primary-foreground px-5 py-3.5 shrink-0">
+        <div className="bg-primary text-primary-foreground px-3 sm:px-5 py-2.5 sm:py-3.5 shrink-0">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-white/10 rounded-lg">
-                <Sparkles className="w-5 h-5" />
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="p-1.5 sm:p-2 bg-white/10 rounded-lg">
+                <Sparkles className="w-4 h-4 sm:w-5 sm:h-5" />
               </div>
               <div>
-                <h2 className="text-base font-semibold">AI Tutor</h2>
-                <p className="text-xs opacity-70">
+                <h2 className="text-sm sm:text-base font-semibold">AI Tutor</h2>
+                <p className="text-[10px] sm:text-xs opacity-70">
                   Ask your doubt
                 </p>
               </div>
@@ -277,17 +277,17 @@ export function AITutorChat({
                   variant="ghost"
                   size="sm"
                   onClick={clearChat}
-                  className="text-primary-foreground/70 hover:text-primary-foreground hover:bg-white/10 h-8 text-xs"
+                  className="text-primary-foreground/70 hover:text-primary-foreground hover:bg-white/10 h-7 sm:h-8 text-[10px] sm:text-xs px-2"
                 >
-                  <RefreshCw className="w-3.5 h-3.5 mr-1" />
-                  Clear
+                  <RefreshCw className="w-3 h-3 sm:w-3.5 sm:h-3.5 mr-1" />
+                  <span className="hidden sm:inline">Clear</span>
                 </Button>
               )}
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={() => onOpenChange(false)}
-                className="text-primary-foreground/70 hover:text-primary-foreground hover:bg-white/10 h-8 w-8"
+                className="text-primary-foreground/70 hover:text-primary-foreground hover:bg-white/10 h-7 w-7 sm:h-8 sm:w-8"
               >
                 <X className="w-4 h-4" />
               </Button>
@@ -296,15 +296,15 @@ export function AITutorChat({
         </div>
 
         {/* Question Context - Compact */}
-        <div className="bg-muted/50 border-b border-border px-5 py-3 shrink-0">
-          <div className="flex items-start gap-3">
-            <div className="p-1.5 bg-primary/10 rounded-lg shrink-0">
-              <BookOpen className="w-4 h-4 text-primary" />
+        <div className="bg-muted/50 border-b border-border px-3 sm:px-5 py-2 sm:py-3 shrink-0">
+          <div className="flex items-start gap-2 sm:gap-3">
+            <div className="p-1 sm:p-1.5 bg-primary/10 rounded-lg shrink-0">
+              <BookOpen className="w-3 h-3 sm:w-4 sm:h-4 text-primary" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm text-foreground/90 line-clamp-2">{questionText}</p>
-              <div className="flex items-center gap-2 mt-2 flex-wrap">
-                <Badge variant="secondary" className="text-xs font-medium">
+              <p className="text-xs sm:text-sm text-foreground/90 line-clamp-2">{questionText}</p>
+              <div className="flex items-center gap-1.5 sm:gap-2 mt-1.5 sm:mt-2 flex-wrap">
+                <Badge variant="secondary" className="text-[10px] sm:text-xs font-medium">
                   ✓ {correctAnswer}
                 </Badge>
                 <Badge 
@@ -529,10 +529,10 @@ export function AITutorChat({
         </div>
 
         {/* Input Area */}
-        <div className="border-t border-border bg-background px-5 py-3 shrink-0">
+        <div className="border-t border-border bg-background px-3 sm:px-5 py-2 sm:py-3 shrink-0">
           {/* Quick Suggestions for follow-up */}
           {messages.length > 0 && (
-            <div className="flex flex-wrap gap-2 mb-2">
+            <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-2">
               {followUpSuggestions.map((suggestion) => (
                 <Button
                   key={suggestion}
@@ -540,7 +540,7 @@ export function AITutorChat({
                   size="sm"
                   onClick={() => setInputText(suggestion)}
                   disabled={isLoading}
-                  className="text-xs h-7 hover:bg-accent"
+                  className="text-[10px] sm:text-xs h-6 sm:h-7 hover:bg-accent px-2 sm:px-3"
                 >
                   {suggestion}
                 </Button>
@@ -554,16 +554,16 @@ export function AITutorChat({
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Type your doubt... (Enter to send)"
+              placeholder="Type your doubt..."
               rows={1}
-              className="resize-none flex-1 min-h-[40px] max-h-[100px] text-sm"
+              className="resize-none flex-1 min-h-[36px] sm:min-h-[40px] max-h-[80px] sm:max-h-[100px] text-sm"
               disabled={isLoading}
             />
             <Button
               onClick={handleSubmit}
               disabled={isLoading || !inputText.trim()}
               size="icon"
-              className="shrink-0 h-10 w-10"
+              className="shrink-0 h-9 w-9 sm:h-10 sm:w-10"
             >
               {isLoading ? (
                 <Loader2 className="w-4 h-4 animate-spin" />

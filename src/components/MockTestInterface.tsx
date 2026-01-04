@@ -456,7 +456,7 @@ export function MockTestInterface({
 
                     {/* Options */}
                     <RadioGroup value={selectedAnswer} onValueChange={setSelectedAnswer}>
-                      <div className="space-y-3">
+                      <div className="space-y-2 sm:space-y-3">
                         {currentQ.options.map((option, idx) => (
                           <motion.div
                             key={idx}
@@ -464,7 +464,7 @@ export function MockTestInterface({
                             whileTap={{ scale: 0.99 }}
                           >
                             <div
-                              className={`flex items-start gap-3 p-4 rounded-lg border-2 transition-all cursor-pointer ${
+                              className={`flex items-start gap-2 sm:gap-3 p-3 sm:p-4 rounded-lg border-2 transition-all cursor-pointer ${
                                 selectedAnswer === option
                                   ? 'border-violet-500 bg-violet-400/20 dark:bg-violet-500/20 border-[3px]'
                                   : 'border-gray-200 dark:border-slate-800 hover:border-[#86EFAC] dark:hover:border-[#6EE7B7]'
@@ -474,11 +474,11 @@ export function MockTestInterface({
                               <RadioGroupItem
                                 value={option}
                                 id={`option-${idx}`}
-                                className="mt-0.5"
+                                className="mt-0.5 shrink-0"
                               />
                               <Label
                                 htmlFor={`option-${idx}`}
-                                className="flex-1 cursor-pointer text-gray-800 dark:text-gray-200 leading-relaxed"
+                                className="flex-1 cursor-pointer text-gray-800 dark:text-gray-200 leading-relaxed text-sm sm:text-base"
                               >
                                 {option}
                               </Label>

@@ -185,41 +185,41 @@ export function TestResultsScreen({
   const topicAnalysis = getTopicAnalysis();
 
   return (
-    <div className="min-h-screen bg-[#F9F6F2] dark:bg-[#0a0a0a]">
-      {/* Header */}
+    <div className="min-h-screen bg-[#F9F6F2] dark:bg-[#0a0a0a] pb-20 sm:pb-0\">\n      {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         className="bg-[#F9F6F2] dark:bg-[#1a1a1a] border-b-[3px] border-black dark:border-white"
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
-                <Trophy className="h-8 w-8 text-amber-500" />
-                Test Results
-              </h1>
-              <p className="text-gray-600 dark:text-gray-400 mt-1">{testTitle}</p>
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-3 sm:py-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <Trophy className="h-6 w-6 sm:h-8 sm:w-8 text-amber-500 shrink-0" />
+              <div>
+                <h1 className="text-lg sm:text-3xl font-bold text-gray-900 dark:text-white">
+                  Test Results
+                </h1>
+                <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 truncate max-w-[200px] sm:max-w-none">{testTitle}</p>
+              </div>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3">
               {userId && (
                 <Button
                   variant="outline"
+                  size="sm"
                   onClick={() => setAdaptiveOpen(true)}
-                  className="flex items-center gap-2 border-primary text-primary hover:bg-primary/5"
+                  className="flex items-center gap-1 sm:gap-2 border-primary text-primary hover:bg-primary/5 text-xs sm:text-sm"
                 >
-                  <Brain className="h-4 w-4" />
-                  <span className="hidden sm:inline">Practice Weak Topics</span>
-                  <span className="sm:hidden">Practice</span>
+                  <Brain className="h-3 w-3 sm:h-4 sm:w-4" />
+                  <span className="hidden sm:inline">Practice</span>
                 </Button>
               )}
-              <Button variant="outline" onClick={onGoHome} className="flex items-center gap-2">
-                <Home className="h-4 w-4" />
-                <span className="hidden sm:inline">Dashboard</span>
+              <Button variant="outline" size="sm" onClick={onGoHome} className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+                <Home className="h-3 w-3 sm:h-4 sm:w-4" />
               </Button>
-              <Button onClick={onRetakeTest} className="bg-gradient-to-r from-amber-400 via-orange-500 to-red-500 hover:from-amber-500 hover:via-orange-600 hover:to-red-600 border-2 border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] text-white font-bold flex items-center gap-2">
-                <RotateCcw className="h-4 w-4" />
-                <span className="hidden sm:inline">Retake Test</span>
+              <Button size="sm" onClick={onRetakeTest} className="bg-gradient-to-r from-amber-400 via-orange-500 to-red-500 hover:from-amber-500 hover:via-orange-600 hover:to-red-600 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] text-white font-bold flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+                <RotateCcw className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="hidden sm:inline">Retake</span>
               </Button>
             </div>
           </div>
@@ -227,8 +227,8 @@ export function TestResultsScreen({
       </motion.div>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8\">
+        <div className=\"grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6\">"
           {/* Score Card - Large */}
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
@@ -237,18 +237,18 @@ export function TestResultsScreen({
             className="lg:col-span-1"
           >
             <Card className="rounded-2xl border-[3px] border-black dark:border-white shadow-2xl overflow-hidden">
-              <div className="bg-gradient-to-br from-amber-400 via-orange-500 to-red-500 dark:from-amber-500 dark:via-orange-600 dark:to-red-600 border-b-[3px] border-black dark:border-white p-8 text-center text-white">
-                <Award className="h-16 w-16 mx-auto mb-4" />
-                <h2 className="text-lg font-semibold mb-2">Your Score</h2>
-                <div className="text-6xl font-bold mb-2">
+              <div className="bg-gradient-to-br from-amber-400 via-orange-500 to-red-500 dark:from-amber-500 dark:via-orange-600 dark:to-red-600 border-b-[3px] border-black dark:border-white p-4 sm:p-8 text-center text-white">
+                <Award className="h-10 w-10 sm:h-16 sm:w-16 mx-auto mb-2 sm:mb-4" />
+                <h2 className="text-sm sm:text-lg font-semibold mb-1 sm:mb-2">Your Score</h2>
+                <div className="text-4xl sm:text-6xl font-bold mb-1 sm:mb-2">
                   {results.score.toFixed(1)}
                 </div>
-                <p className="text-xl opacity-90">out of {totalMarks}</p>
-                <div className="mt-4 pt-4 border-t border-white/20">
-                  <p className={`text-2xl font-bold ${performance.color.replace('dark:text', 'text').replace('text-', 'text-white')}`}>
+                <p className="text-base sm:text-xl opacity-90">out of {totalMarks}</p>
+                <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-white/20">
+                  <p className={`text-xl sm:text-2xl font-bold ${performance.color.replace('dark:text', 'text').replace('text-', 'text-white')}`}>
                     {results.percentage}%
                   </p>
-                  <p className="text-sm opacity-75">{performance.message}</p>
+                  <p className="text-xs sm:text-sm opacity-75">{performance.message}</p>
                 </div>
               </div>
               
@@ -280,28 +280,28 @@ export function TestResultsScreen({
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
             >
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+              <div className="grid grid-cols-3 gap-2 sm:gap-4">
                 <Card className="rounded-xl bg-gradient-to-br from-emerald-400 to-teal-500 dark:from-emerald-500 dark:to-teal-600 border-2 border-black dark:border-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
-                  <CardContent className="pt-6 text-center">
-                    <CheckCircle2 className="h-8 w-8 text-white mx-auto mb-2" />
-                    <p className="text-3xl font-bold text-white">{results.correct}</p>
-                    <p className="text-sm text-white/80">Correct</p>
+                  <CardContent className="p-3 sm:pt-6 text-center">
+                    <CheckCircle2 className="h-5 w-5 sm:h-8 sm:w-8 text-white mx-auto mb-1 sm:mb-2" />
+                    <p className="text-xl sm:text-3xl font-bold text-white">{results.correct}</p>
+                    <p className="text-[10px] sm:text-sm text-white/80">Correct</p>
                   </CardContent>
                 </Card>
 
                 <Card className="rounded-xl bg-gradient-to-br from-red-400 to-rose-500 dark:from-red-500 dark:to-rose-600 border-2 border-black dark:border-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
-                  <CardContent className="pt-6 text-center">
-                    <XCircle className="h-8 w-8 text-white mx-auto mb-2" />
-                    <p className="text-3xl font-bold text-white">{results.incorrect}</p>
-                    <p className="text-sm text-white/80">Incorrect</p>
+                  <CardContent className="p-3 sm:pt-6 text-center">
+                    <XCircle className="h-5 w-5 sm:h-8 sm:w-8 text-white mx-auto mb-1 sm:mb-2" />
+                    <p className="text-xl sm:text-3xl font-bold text-white">{results.incorrect}</p>
+                    <p className="text-[10px] sm:text-sm text-white/80">Incorrect</p>
                   </CardContent>
                 </Card>
 
                 <Card className="rounded-xl bg-gradient-to-br from-slate-300 to-gray-400 dark:from-slate-600 dark:to-gray-700 border-2 border-black dark:border-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
-                  <CardContent className="pt-6 text-center">
-                    <Target className="h-8 w-8 text-white mx-auto mb-2" />
-                    <p className="text-3xl font-bold text-white">{results.skipped}</p>
-                    <p className="text-sm text-white/80">Skipped</p>
+                  <CardContent className="p-3 sm:pt-6 text-center">
+                    <Target className="h-5 w-5 sm:h-8 sm:w-8 text-white mx-auto mb-1 sm:mb-2" />
+                    <p className="text-xl sm:text-3xl font-bold text-white">{results.skipped}</p>
+                    <p className="text-[10px] sm:text-sm text-white/80">Skipped</p>
                   </CardContent>
                 </Card>
               </div>
@@ -405,11 +405,11 @@ export function TestResultsScreen({
             </CardHeader>
             <CardContent>
               <Tabs defaultValue="all" className="w-full">
-                <TabsList className="grid w-full grid-cols-4 mb-6">
-                  <TabsTrigger value="all">All ({questions.length})</TabsTrigger>
-                  <TabsTrigger value="correct" className="text-green-600">Correct ({results.correct})</TabsTrigger>
-                  <TabsTrigger value="incorrect" className="text-red-600">Incorrect ({results.incorrect})</TabsTrigger>
-                  <TabsTrigger value="skipped" className="text-gray-600">Skipped ({results.skipped})</TabsTrigger>
+                <TabsList className="grid w-full grid-cols-4 mb-4 sm:mb-6 h-auto">
+                  <TabsTrigger value="all" className="text-[10px] sm:text-sm py-1.5 sm:py-2 px-1 sm:px-3">All ({questions.length})</TabsTrigger>
+                  <TabsTrigger value="correct" className="text-green-600 text-[10px] sm:text-sm py-1.5 sm:py-2 px-1 sm:px-3">Correct ({results.correct})</TabsTrigger>
+                  <TabsTrigger value="incorrect" className="text-red-600 text-[10px] sm:text-sm py-1.5 sm:py-2 px-1 sm:px-3">Incorrect ({results.incorrect})</TabsTrigger>
+                  <TabsTrigger value="skipped" className="text-gray-600 text-[10px] sm:text-sm py-1.5 sm:py-2 px-1 sm:px-3">Skipped ({results.skipped})</TabsTrigger>
                 </TabsList>
 
                 {['all', 'correct', 'incorrect', 'skipped'].map((tab) => (
@@ -434,7 +434,7 @@ export function TestResultsScreen({
                               initial={{ opacity: 0 }}
                               animate={{ opacity: 1 }}
                               transition={{ delay: index * 0.05 }}
-                              className={`p-6 rounded-lg border-2 ${
+                              className={`p-3 sm:p-6 rounded-lg border-2 ${
                                 isSkipped 
                                   ? 'border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/30'
                                   : isCorrect 
@@ -443,11 +443,11 @@ export function TestResultsScreen({
                               }`}
                             >
                               {/* Question Header */}
-                              <div className="flex items-start justify-between mb-4">
-                                <h3 className="font-semibold text-gray-900 dark:text-white">
+                              <div className="flex items-start justify-between mb-3 sm:mb-4">
+                                <h3 className="font-semibold text-gray-900 dark:text-white text-sm sm:text-base">
                                   Question {index + 1}
                                 </h3>
-                                <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-1 sm:gap-2 flex-wrap justify-end">
                                   <Badge variant={q.difficulty === 'easy' ? 'secondary' : q.difficulty === 'medium' ? 'default' : 'destructive'}>
                                     {q.difficulty}
                                   </Badge>
@@ -462,10 +462,10 @@ export function TestResultsScreen({
                               </div>
 
                               {/* Question Text */}
-                              <p className="text-gray-800 dark:text-gray-200 mb-4">{q.question}</p>
+                              <p className="text-gray-800 dark:text-gray-200 mb-3 sm:mb-4 text-sm sm:text-base">{q.question}</p>
 
                               {/* Options */}
-                              <div className="space-y-2 mb-4">
+                              <div className="space-y-2 mb-3 sm:mb-4">
                                 {q.options.map((option, optIdx) => {
                                   const isUserAnswer = option === userAnswer;
                                   // Check if this option's letter matches the correct answer
@@ -475,7 +475,7 @@ export function TestResultsScreen({
                                   return (
                                     <div
                                       key={optIdx}
-                                      className={`p-3 rounded-lg border ${
+                                      className={`p-2 sm:p-3 rounded-lg border ${
                                         isCorrectAnswer
                                           ? 'border-green-500 bg-green-100 dark:bg-green-950/50'
                                           : isUserAnswer
@@ -483,10 +483,10 @@ export function TestResultsScreen({
                                           : 'border-gray-200 dark:border-gray-700'
                                       }`}
                                     >
-                                      <div className="flex items-center gap-2">
-                                        {isCorrectAnswer && <CheckCircle2 className="h-5 w-5 text-green-600" />}
-                                        {isUserAnswer && !isCorrectAnswer && <XCircle className="h-5 w-5 text-red-600" />}
-                                        <span className={`${isCorrectAnswer || isUserAnswer ? 'font-semibold' : ''}`}>
+                                      <div className="flex items-start gap-2">
+                                        {isCorrectAnswer && <CheckCircle2 className="h-4 w-4 sm:h-5 sm:w-5 text-green-600 shrink-0 mt-0.5" />}
+                                        {isUserAnswer && !isCorrectAnswer && <XCircle className="h-4 w-4 sm:h-5 sm:w-5 text-red-600 shrink-0 mt-0.5" />}
+                                        <span className={`text-sm sm:text-base ${isCorrectAnswer || isUserAnswer ? 'font-semibold' : ''}`}>
                                           {option}
                                         </span>
                                       </div>
