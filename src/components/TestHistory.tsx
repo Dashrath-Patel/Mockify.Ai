@@ -88,6 +88,13 @@ export function TestHistory() {
       filtered = filtered.filter(test => !test.is_scheduled);
     }
     
+    // Sort by created_at descending (latest first)
+    filtered = filtered.sort((a, b) => {
+      const dateA = new Date(a.created_at || 0).getTime();
+      const dateB = new Date(b.created_at || 0).getTime();
+      return dateB - dateA;
+    });
+    
     setFilteredTests(filtered);
   }, [searchQuery, filterExamType, filterStatus, savedTests]);
 

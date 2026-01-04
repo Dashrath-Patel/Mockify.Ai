@@ -507,14 +507,14 @@ export function UploadMaterials() {
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="relative w-full max-w-6xl h-[90vh] bg-white dark:bg-gray-900 rounded-2xl shadow-2xl overflow-hidden"
+              className="relative w-full max-w-6xl h-[85vh] sm:h-[90vh] bg-white dark:bg-gray-900 rounded-xl sm:rounded-2xl shadow-2xl overflow-hidden mx-2 sm:mx-4"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Header */}
-              <div className="flex items-center justify-between p-4 border-b-2 border-black dark:border-white bg-[#F9F6F2] dark:bg-[#1a1a1a]">
-                <div className="flex items-center gap-3">
-                  <FileText className="h-5 w-5 text-black dark:text-white" />
-                  <h3 className="text-lg font-bold text-black dark:text-white truncate max-w-md">
+              <div className="flex items-center justify-between p-2 sm:p-4 border-b-2 border-black dark:border-white bg-[#F9F6F2] dark:bg-[#1a1a1a]">
+                <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+                  <FileText className="h-4 w-4 sm:h-5 sm:w-5 text-black dark:text-white shrink-0" />
+                  <h3 className="text-sm sm:text-lg font-bold text-black dark:text-white truncate">
                     {viewingMaterial.name}
                   </h3>
                 </div>
@@ -522,9 +522,9 @@ export function UploadMaterials() {
                   variant="ghost"
                   size="icon"
                   onClick={closeViewer}
-                  className="h-8 w-8 rounded-lg border-2 border-black dark:border-white text-black dark:text-white hover:bg-red-100 dark:hover:bg-red-900/20"
+                  className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg border-2 border-black dark:border-white text-black dark:text-white hover:bg-red-100 dark:hover:bg-red-900/20 shrink-0 ml-2"
                 >
-                  <X className="h-5 w-5" />
+                  <X className="h-5 w-5 sm:h-6 sm:w-6" />
                 </Button>
               </div>
 

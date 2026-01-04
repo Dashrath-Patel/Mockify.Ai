@@ -882,7 +882,7 @@ export function MockTests() {
           Generating Your Test
         </h3>
         <p className="text-gray-500 dark:text-gray-400 text-sm">
-          AI is crafting questions for your weak topics...
+          AI is crafting personalized questions for you...
         </p>
       </motion.div>
     </div>
