@@ -88,10 +88,15 @@ export function TestHistory() {
       filtered = filtered.filter(test => !test.is_scheduled);
     }
     
-    // Sort by created_at descending (latest first)
+    // Sort by date descending (latest first)
+    // Use scheduled_date for scheduled tests, created_at for regular tests
     filtered = filtered.sort((a, b) => {
-      const dateA = new Date(a.created_at || 0).getTime();
-      const dateB = new Date(b.created_at || 0).getTime();
+      const dateA = a.is_scheduled && a.scheduled_date 
+        ? new Date(`${a.scheduled_date}T${a.scheduled_time || '00:00'}`).getTime()
+        : new Date(a.created_at || 0).getTime();
+      const dateB = b.is_scheduled && b.scheduled_date 
+        ? new Date(`${b.scheduled_date}T${b.scheduled_time || '00:00'}`).getTime()
+        : new Date(b.created_at || 0).getTime();
       return dateB - dateA;
     });
     
