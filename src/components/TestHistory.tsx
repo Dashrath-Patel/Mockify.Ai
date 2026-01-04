@@ -5,6 +5,7 @@ import { motion } from 'motion/react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from './ui/alert-dialog';
 import { FileText, Trash2, Search, Clock, Brain, Calendar, Filter, Loader2, Play, ChevronRight, Trophy, Target } from 'lucide-react';
 import { createClient } from '@/lib/supabase';
@@ -30,6 +31,8 @@ export function TestHistory() {
   const [filteredTests, setFilteredTests] = useState<SavedTest[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [filterExamType, setFilterExamType] = useState<string>('all');
+  const [filterStatus, setFilterStatus] = useState<string>('all');
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [testToDelete, setTestToDelete] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
@@ -59,19 +62,37 @@ export function TestHistory() {
     fetchData();
   }, []);
 
-  // Filter tests based on search
+  // Filter tests based on search, exam type, and status
   useEffect(() => {
-    if (!searchQuery.trim()) {
-      setFilteredTests(savedTests);
-    } else {
+    let filtered = savedTests;
+    
+    // Filter by search query
+    if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
-      setFilteredTests(savedTests.filter(test => 
+      filtered = filtered.filter(test => 
         test.name.toLowerCase().includes(query) ||
         test.topic.toLowerCase().includes(query) ||
         test.exam_type.toLowerCase().includes(query)
-      ));
+      );
     }
-  }, [searchQuery, savedTests]);
+    
+    // Filter by exam type
+    if (filterExamType !== 'all') {
+      filtered = filtered.filter(test => test.exam_type === filterExamType);
+    }
+    
+    // Filter by status (scheduled vs regular)
+    if (filterStatus === 'scheduled') {
+      filtered = filtered.filter(test => test.is_scheduled);
+    } else if (filterStatus === 'regular') {
+      filtered = filtered.filter(test => !test.is_scheduled);
+    }
+    
+    setFilteredTests(filtered);
+  }, [searchQuery, filterExamType, filterStatus, savedTests]);
+
+  // Get unique exam types for filter dropdown
+  const uniqueExamTypes = [...new Set(savedTests.map(test => test.exam_type).filter(Boolean))];
 
   const fetchSavedTests = async (uid: string) => {
     try {
@@ -367,6 +388,49 @@ export function TestHistory() {
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-12 py-6 text-base rounded-xl border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900"
           />
+        </div>
+        
+        {/* Filter Dropdowns */}
+        <div className="flex flex-wrap gap-3 mt-4">
+          <Select value={filterExamType} onValueChange={setFilterExamType}>
+            <SelectTrigger className="w-[180px] border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
+              <Filter className="h-4 w-4 mr-2 text-gray-500" />
+              <SelectValue placeholder="Exam Type" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Exam Types</SelectItem>
+              {uniqueExamTypes.map((examType) => (
+                <SelectItem key={examType} value={examType}>{examType}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          
+          <Select value={filterStatus} onValueChange={setFilterStatus}>
+            <SelectTrigger className="w-[180px] border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
+              <Calendar className="h-4 w-4 mr-2 text-gray-500" />
+              <SelectValue placeholder="Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Tests</SelectItem>
+              <SelectItem value="scheduled">Scheduled</SelectItem>
+              <SelectItem value="regular">Regular</SelectItem>
+            </SelectContent>
+          </Select>
+          
+          {(filterExamType !== 'all' || filterStatus !== 'all' || searchQuery) && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setFilterExamType('all');
+                setFilterStatus('all');
+                setSearchQuery('');
+              }}
+              className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+            >
+              Clear Filters
+            </Button>
+          )}
         </div>
       </motion.div>
 

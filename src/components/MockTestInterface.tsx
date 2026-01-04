@@ -40,6 +40,7 @@ interface MockTestInterfaceProps {
   questions: Question[];
   testTitle: string;
   duration: number; // in minutes
+  positiveMarking?: number; // marks per correct answer
   negativeMarking?: number; // negative marks per wrong answer
   onSubmitTest: (answers: Record<number, string>, timeSpent: number) => void;
   onExitTest: () => void;
@@ -49,6 +50,7 @@ export function MockTestInterface({
   questions,
   testTitle,
   duration,
+  positiveMarking = 2,
   negativeMarking = 0.66,
   onSubmitTest,
   onExitTest
@@ -423,7 +425,7 @@ export function MockTestInterface({
               </span>
               <div className="flex items-center gap-3 text-gray-600 dark:text-gray-400">
                 <span className="flex items-center gap-1">
-                  <span className="font-semibold text-[#86EFAC] dark:text-[#6EE7B7]">+2</span>
+                  <span className="font-semibold text-[#86EFAC] dark:text-[#6EE7B7]">+{positiveMarking}</span>
                   <span>Marks</span>
                 </span>
                 <span className="flex items-center gap-1">

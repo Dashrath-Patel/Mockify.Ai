@@ -53,9 +53,11 @@ export function MockTests() {
   const [userId, setUserId] = useState<string | null>(null);
   const [questionCount, setQuestionCount] = useState(25);
   const [testDuration, setTestDuration] = useState(30);
+  const [positiveMarking, setPositiveMarking] = useState(2);
   const [negativeMarking, setNegativeMarking] = useState(0.66);
   const [questionInput, setQuestionInput] = useState('25');
   const [durationInput, setDurationInput] = useState('30');
+  const [positiveMarkingInput, setPositiveMarkingInput] = useState('2');
   const [negativeMarkingInput, setNegativeMarkingInput] = useState('0.66');
   const [userAnswers, setUserAnswers] = useState<Record<number, string>>({});
   const [timeSpent, setTimeSpent] = useState(0);
@@ -896,8 +898,8 @@ export function MockTests() {
           testTitle={testTitle}
           duration={testDuration}
           totalQuestions={questions.length}
-          totalMarks={questions.length * 2}
-          marksPerQuestion={2}
+          totalMarks={questions.length * positiveMarking}
+          marksPerQuestion={positiveMarking}
           negativeMarking={negativeMarking}
           onStartTest={handleStartTest}
           onGoBack={handleGoHome}
@@ -923,6 +925,7 @@ export function MockTests() {
         questions={questions}
         testTitle={testTitle}
         duration={testDuration}
+        positiveMarking={positiveMarking}
         negativeMarking={negativeMarking}
         onSubmitTest={handleSubmitTest}
         onExitTest={handleGoHome}
@@ -942,8 +945,8 @@ export function MockTests() {
           userAnswers={userAnswers}
           timeSpent={timeSpent}
           testTitle={testTitle}
-          totalMarks={questions.length * 2}
-          marksPerQuestion={2}
+          totalMarks={questions.length * positiveMarking}
+          marksPerQuestion={positiveMarking}
           negativeMarking={negativeMarking}
           userId={userId || undefined}
           examType={selectedExam}
@@ -1327,6 +1330,42 @@ export function MockTests() {
                     </div>
                     
                     <div className="space-y-2">
+                      <label htmlFor="positive-marking-input" className="text-sm text-gray-700 dark:text-gray-300 font-semibold">Positive Marking (per correct answer)</label>
+                      <Input
+                        id="positive-marking-input"
+                        type="text"
+                        value={positiveMarkingInput}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          // Allow empty, numbers, and decimal
+                          if (val === '' || /^\d*\.?\d*$/.test(val)) {
+                            setPositiveMarkingInput(val);
+                            const num = parseFloat(val);
+                            if (!isNaN(num)) {
+                              setPositiveMarking(Math.min(10, Math.max(1, num)));
+                            }
+                          }
+                        }}
+                        onBlur={() => {
+                          // On blur, ensure valid value
+                          const num = parseFloat(positiveMarkingInput);
+                          if (isNaN(num) || num < 1) {
+                            setPositiveMarkingInput('1');
+                            setPositiveMarking(1);
+                          } else if (num > 10) {
+                            setPositiveMarkingInput('10');
+                            setPositiveMarking(10);
+                          } else {
+                            setPositiveMarkingInput(num.toString());
+                            setPositiveMarking(num);
+                          }
+                        }}
+                        className="rounded-lg bg-white dark:bg-slate-800/50 border-2 border-gray-300 dark:border-slate-700 text-gray-900 dark:text-gray-200"
+                      />
+                      <p className="text-xs text-gray-500 dark:text-gray-400">Min: 1, Max: 10 marks</p>
+                    </div>
+                    
+                    <div className="space-y-2">
                       <label htmlFor="negative-marking-input" className="text-sm text-gray-700 dark:text-gray-300 font-semibold">Negative Marking (per wrong answer)</label>
                       <Input
                         id="negative-marking-input"
@@ -1371,7 +1410,7 @@ export function MockTests() {
                         <p className="text-sm text-gray-700 dark:text-gray-400 mt-1">
                           • {questionCount} Questions<br />
                           • {testDuration} Minutes Duration<br />
-                          • +2 per correct, {negativeMarking > 0 ? `-${negativeMarking} per wrong` : 'No negative marking'}<br />
+                          • +{positiveMarking} per correct, {negativeMarking > 0 ? `-${negativeMarking} per wrong` : 'No negative marking'}<br />
                           • AI-Generated from {selectedMaterials.length > 0 ? `${selectedMaterials.length} material${selectedMaterials.length > 1 ? 's' : ''}` : 'your uploaded materials'}
                         </p>
                       </div>
