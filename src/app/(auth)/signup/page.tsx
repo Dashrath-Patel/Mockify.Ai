@@ -9,7 +9,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { createClient } from "@/lib/supabase";
 import { toast } from "sonner";
 import { IconBrandGoogle, IconBrandFacebook, IconBrandApple } from "@tabler/icons-react";
-import { Eye, EyeOff, Home, Layers, MessageSquare, LogIn, UserPlus } from "lucide-react";
+import { Eye, EyeOff, Home, Layers, MessageSquare, LogIn, UserPlus, Sparkles } from "lucide-react";
 import { navigationEvents } from "@/lib/navigation-events";
 import { Footer } from "@/components/footer";
 import { motion } from "framer-motion";
@@ -191,8 +191,22 @@ export default function SignUpPage() {
 
   return (
     <DotBackground className="min-h-screen flex flex-col">
+      {/* Top Navbar */}
+      <div className="fixed top-2 inset-x-0 max-w-6xl mx-auto z-50 px-4">
+        <div className="flex items-center justify-center md:justify-start bg-white/90 backdrop-blur-md rounded-xl border-2 border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] px-4 py-2.5">
+          <Link href="/" className="flex items-center gap-1.5">
+            <div className="flex items-center justify-center w-7 h-7 rounded-md bg-gradient-to-br from-purple-600 to-blue-600 shadow-md">
+              <Sparkles className="w-4 h-4 text-white" />
+            </div>
+            <span className="font-bold text-sm text-black">
+              MockifyAI
+            </span>
+          </Link>
+        </div>
+      </div>
+
       {/* Main Content */}
-      <main className="flex-1 flex items-center justify-center px-4 py-6 sm:py-12 pb-20 md:pb-12 relative z-10">
+      <main className="flex-1 flex items-center justify-center px-4 pt-20 py-6 sm:py-12 pb-20 md:pb-12 relative z-10">
         <div className="w-full max-w-md">
           <div className="text-center mb-5 sm:mb-8">
             <h1 className="text-2xl sm:text-3xl font-bold text-black dark:text-white mb-1.5 sm:mb-2">
@@ -335,8 +349,10 @@ export default function SignUpPage() {
         </div>
       </main>
 
-      {/* Footer */}
-      <Footer />
+      {/* Footer - Hidden on mobile */}
+      <div className="hidden md:block">
+        <Footer />
+      </div>
 
       {/* Mobile Bottom Navigation Bar */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-t-2 border-black shadow-[0px_-4px_10px_rgba(0,0,0,0.1)]">
